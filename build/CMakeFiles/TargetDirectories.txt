@@ -1,0 +1,3 @@
+/Users/julian/Documents/GitHub/Service-Hunter/build/CMakeFiles/ServiceHunter.dir
+/Users/julian/Documents/GitHub/Service-Hunter/build/CMakeFiles/edit_cache.dir
+/Users/julian/Documents/GitHub/Service-Hunter/build/CMakeFiles/rebuild_cache.dir

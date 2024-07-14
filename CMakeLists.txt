@@ -1,13 +1,28 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.10)
 project(ServiceHunter)
 
+# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-add_executable(ServiceHunter main.cpp MainWindow.cpp MainWindow.h)
+# Find SFML package
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
-#set(SFML_STATIC_LIBRARIES TRUE)
-set(SFML_DIR C:/SFML/lib/cmake/SFML)
-find_package(SFML COMPONENTS system window graphics audio network REQUIRED)
+# Use pkg-config to find libpqxx and libpq
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PQXX REQUIRED libpqxx)
 
-include_directories(C:/ServiceHunter/SFML/include/SFML)
-target_link_libraries(ServiceHunter sfml-system sfml-window sfml-graphics sfml-audio)
+# Specify include and library directories for libpq and libpqxx
+if (APPLE)
+    include_directories(${SFML_INCLUDE_DIR} ${PQXX_INCLUDE_DIRS} /usr/local/opt/libpq/include)
+    link_directories(${PQXX_LIBRARY_DIRS} /usr/local/opt/libpq/lib)
+elseif (WIN32)
+    include_directories(${SFML_INCLUDE_DIR} ${PQXX_INCLUDE_DIRS} "C:/Program Files/PostgreSQL/pgxx/include")
+    link_directories(${PQXX_LIBRARY_DIRS} "C:/Program Files/PostgreSQL/pgxx/lib")
+endif()
+
+# Add the executable
+add_executable(ServiceHunter src/main.cpp src/MainWindow.cpp)
+
+# Link SFML and libpqxx libraries
+target_link_libraries(ServiceHunter sfml-graphics sfml-window sfml-system pqxx pq)

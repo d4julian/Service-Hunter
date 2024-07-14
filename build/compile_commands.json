@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/Users/julian/Documents/GitHub/Service-Hunter/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/usr/local/Cellar/libpqxx/7.9.1/include -I/usr/local/opt/libpq/include -F/Library/Frameworks -iframework /Library/Frameworks/. -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -iframework /Library/Frameworks/.  -o CMakeFiles/ServiceHunter.dir/src/main.cpp.o -c /Users/julian/Documents/GitHub/Service-Hunter/src/main.cpp",
+  "file": "/Users/julian/Documents/GitHub/Service-Hunter/src/main.cpp",
+  "output": "CMakeFiles/ServiceHunter.dir/src/main.cpp.o"
+},
+{
+  "directory": "/Users/julian/Documents/GitHub/Service-Hunter/build",
+  "command": "/Library/Developer/CommandLineTools/usr/bin/c++  -I/usr/local/Cellar/libpqxx/7.9.1/include -I/usr/local/opt/libpq/include -F/Library/Frameworks -iframework /Library/Frameworks/. -g -std=gnu++17 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.15.sdk -iframework /Library/Frameworks/.  -o CMakeFiles/ServiceHunter.dir/src/MainWindow.cpp.o -c /Users/julian/Documents/GitHub/Service-Hunter/src/MainWindow.cpp",
+  "file": "/Users/julian/Documents/GitHub/Service-Hunter/src/MainWindow.cpp",
+  "output": "CMakeFiles/ServiceHunter.dir/src/MainWindow.cpp.o"
+}
+]
