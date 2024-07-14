@@ -1,0 +1,3 @@
+/Users/calebjackson/CLionProjects/Service-Hunter/cmake-build-debug/CMakeFiles/ServiceHunter.dir
+/Users/calebjackson/CLionProjects/Service-Hunter/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/calebjackson/CLionProjects/Service-Hunter/cmake-build-debug/CMakeFiles/rebuild_cache.dir
