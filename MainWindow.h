@@ -17,6 +17,8 @@ public:
                 };
 private:
 
+    std::string state;
+
     int page;
 
     sf::RenderWindow Window;
@@ -33,6 +35,10 @@ private:
     std::vector<sf::RectangleShape> Objects;
     std::vector<sf::Text> Texts;
 
+    std::vector<sf::RectangleShape> ServiceView;
+    std::vector<sf::Text> ServiceText;
+
+    void OpenService(int index);
     void Events();
     void Draw();
     void Services();
