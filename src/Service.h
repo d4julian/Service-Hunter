@@ -4,9 +4,10 @@
 using namespace std;
 
 class Service {
-    int id, rating, provider;
-    string title, description;
-    float rating, cost;
-    Service(int id, int provider, const string& title, const string& description, float rating, float cost) : 
+public:
+    int id, rating;
+    string title, description, provider;
+    float cost;
+    Service(int id, string provider, const string& title, const string& description, int rating, float cost) : 
         id(id), provider(provider), title(title), description(description), rating(rating), cost(cost) {}
 };

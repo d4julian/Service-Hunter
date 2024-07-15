@@ -1,7 +1,15 @@
 #include "MainWindow.h"
+#include "Database.h"
+
+vector<Service> services;
 
 MainWindow::MainWindow()
 {
+ 
+    auto future = std::async(std::launch::async, []() {
+        Database database;
+        return database.getServices();
+    });
     // the window function will serve all of the UI functionality for the application
 
     Window.create(sf::VideoMode(1200, 800), "Service Hunter");
@@ -62,6 +70,7 @@ MainWindow::MainWindow()
 
     // for the future implementation where we actually store all the services we have
 
+    services = future.get();
     //LoadServices();
 }
 
@@ -206,14 +215,6 @@ void MainWindow::Draw()
 
 void MainWindow::Services()
 {
-    for (int i = 1; i < 13; i++)
-    {
-        struct MainWindow::Services Service;
-        Service.Name = "Service " + std::to_string(i);
-        Service.Description = "Description " + std::to_string(i);
-        Service.rating = i%5;
-        ServicesList.push_back(Service);
-    }
     for (int i = 1; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
@@ -228,7 +229,7 @@ void MainWindow::Services()
 
             sf::Text ServiceName;
             ServiceName.setFont(Font);
-            ServiceName.setString(ServicesList[page*(4*(i-1)+j)].Name);
+            ServiceName.setString(services[page*(4*(i-1)+j)].title);
             ServiceName.setCharacterSize(24);
             ServiceName.setPosition(30 + (j * 300), (i * 180));
             ServiceName.setFillColor(sf::Color::Black);
@@ -236,7 +237,7 @@ void MainWindow::Services()
 
             sf::Text ServiceDescription;
             ServiceDescription.setFont(Font);
-            ServiceDescription.setString(ServicesList[page*(4*(i-1)+j)].Description);
+            ServiceDescription.setString(services[page*(4*(i-1)+j)].description);
             ServiceDescription.setCharacterSize(20);
             ServiceDescription.setPosition(30 + (j * 300), (i * 180) + 30);
             ServiceDescription.setFillColor(sf::Color::Black);
@@ -244,7 +245,7 @@ void MainWindow::Services()
 
             sf::Text ServiceRating;
             ServiceRating.setFont(Font);
-            ServiceRating.setString("Rating: " + std::to_string(ServicesList[page*(4*(i-1)+j)].rating));
+            ServiceRating.setString("Rating: " + std::to_string(services[page*(4*(i-1)+j)].rating));
             ServiceRating.setCharacterSize(20);
             ServiceRating.setPosition(190 + (j * 300), (i * 180));
             ServiceRating.setFillColor(sf::Color::Black);
@@ -261,7 +262,7 @@ void MainWindow::OpenService(int index)
 
     Header.setFont(Font);
 
-    Header.setString(ServicesList[index].Name);
+    Header.setString(services[index].title);
     Header.setCharacterSize(48);
     Header.setPosition(20, 10);
     Header.setFillColor(sf::Color::White);
@@ -277,7 +278,7 @@ void MainWindow::OpenService(int index)
 
     sf::Text Description;
     Description.setFont(Font);
-    Description.setString(ServicesList[index].Description);
+    Description.setString(services[index].description);
     Description.setCharacterSize(36);
     Description.setPosition(20, 100);
     Description.setFillColor(sf::Color::Black);
@@ -285,7 +286,7 @@ void MainWindow::OpenService(int index)
 
     sf::Text Rating;
     Rating.setFont(Font);
-    Rating.setString("Rating: " + std::to_string(ServicesList[index].rating));
+    Rating.setString("Rating: " + std::to_string(services[index].rating));
     Rating.setCharacterSize(36);
     Rating.setPosition(20, 200);
     Rating.setFillColor(sf::Color::Black);

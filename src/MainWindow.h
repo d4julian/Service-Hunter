@@ -4,18 +4,14 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <vector>
+#include "Service.h"
 
 class MainWindow {
 public:
         MainWindow();
         void run();
-        struct Services
-                {
-            std::string Name;
-            std::string Description;
-            int rating;
-                };
 private:
+    std::vector<Service> services;
 
     std::string state;
 
@@ -26,8 +22,6 @@ private:
     sf::Font Font;
 
     sf::RectangleShape ServiceNodes;
-
-    std::vector<Services> ServicesList;
 
     std::vector<sf::RectangleShape> UI;
     std::vector<sf::Text> UIText;

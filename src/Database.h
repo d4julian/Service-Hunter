@@ -5,7 +5,8 @@
 #include <sstream>
 #include <thread>
 #include <fstream>
-
+#include <vector>
+#include "Service.h"
 
 using namespace std;
 
@@ -20,7 +21,6 @@ public:
     Database() : connection(nullptr) {
         pass = readPassword("db_password.txt");
         connect();
-        cout << executeQueryAsync("SELECT version();").get() << endl;
         cout << "Connected to: " << connection -> dbname() << endl;
     }
     ~Database() {
@@ -75,6 +75,27 @@ public:
 
     future<string> executeQueryAsync(const string& query) {
         return async(launch::async, &Database::executeQuery, this, query);
+    }
+
+    vector<Service> getServices() {
+        vector<Service> result;
+        if (!connection || !connection -> is_open()) {
+            cerr << "Database connection is not open!" << endl;
+            return result;
+        }
+        try {
+            pqxx::work transaction{*connection};
+            for (auto [id, title, description, rating, provider, cost] : transaction.query<int, string, string, int, string, float>(
+                "SELECT id, title, description, rating, provider, cost FROM service_listings"
+            )) result.push_back(Service(id, provider, title, description, rating, cost));
+        } catch (const exception &e) {
+            cerr << e.what() << endl;
+        }
+        return result;
+    }
+
+    future<vector<Service>> getServicesAsync() {
+        return async(launch::async, &Database::getServices, this);
     }
 
 };
