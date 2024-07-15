@@ -1,21 +1,27 @@
 #include "MainWindow.h"
 #include "Database.h"
-
-vector<Service> services;
+#include <filesystem>
+#include <sstream>
 
 MainWindow::MainWindow()
 {
- 
+    checkFiles();
+
     auto future = std::async(std::launch::async, []() {
         Database database;
         return database.getServices();
     });
-    // the window function will serve all of the UI functionality for the application
 
     Window.create(sf::VideoMode(1200, 800), "Service Hunter");
-    Font.loadFromFile("assets/Arial.ttf");
 
-    // the important part is making sure the state is correct for which operation, which is the main page
+    // Use the absolute path for the font file
+    std::string fontPath = "assets/Arial.ttf";
+    if (!Font.loadFromFile(fontPath)) {
+        std::cerr << "Failed to load font " << fontPath << std::endl;
+        exit(1);
+    } else {
+        std::cout << "Successfully loaded font " << fontPath << std::endl;
+    }
 
     page = 1;
     state = "Main";
@@ -29,9 +35,6 @@ MainWindow::MainWindow()
     sf::Text Explore;
 
     Header.setFont(Font);
-
-    // creating these objects is very time consuming and rather ugly, but here it all is
-
     Header.setString("Service Hunter");
     Header.setCharacterSize(48);
     Header.setPosition(20, 10);
@@ -68,10 +71,35 @@ MainWindow::MainWindow()
     Explore.setFillColor(sf::Color::Black);
     UIText.push_back(Explore);
 
-    // for the future implementation where we actually store all the services we have
-
     services = future.get();
-    //LoadServices();
+}
+
+void MainWindow::checkFiles() {
+    // Print the current working directory
+    std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
+
+    // Use the absolute path for the font file
+    //IMPORTANT : MAKE SURE YOU PUT YOURE OWN PATH
+    std::string fontPath = "assets/Arial.ttf";
+    if (!Font.loadFromFile(fontPath)) {
+        std::cerr << "Failed to load font " << fontPath << std::endl;
+        exit(1);
+    } else {
+        std::cout << "Successfully loaded font " << fontPath << std::endl;
+    }
+
+    // Absolute path for the password file
+    //IMPORTANT : MAKE SURE YOU PUT YOURE OWN PATH
+    std::string passwordPath = "db_password.txt";
+    std::cout << "Absolute path for password file: " << passwordPath << std::endl;
+
+    std::ifstream passwordFile(passwordPath);
+    if (!passwordFile.is_open()) {
+        std::cerr << "Unable to open password file " << passwordPath << std::endl;
+        exit(1);
+    } else {
+        std::cout << "Successfully opened password file " << passwordPath << std::endl;
+    }
 }
 
 void MainWindow::run() {
@@ -215,6 +243,10 @@ void MainWindow::Draw()
 
 void MainWindow::Services()
 {
+    // Clear previous objects and texts
+    Objects.clear();
+    Texts.clear();
+
     for (int i = 1; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
@@ -229,29 +261,67 @@ void MainWindow::Services()
 
             sf::Text ServiceName;
             ServiceName.setFont(Font);
-            ServiceName.setString(services[page*(4*(i-1)+j)].title);
-            ServiceName.setCharacterSize(24);
+            ServiceName.setCharacterSize(18);
             ServiceName.setPosition(30 + (j * 300), (i * 180));
             ServiceName.setFillColor(sf::Color::Black);
+            // Wrap the text if it exceeds a certain length
+            std::string title = services[page*(4*(i-1)+j)].title;
+            if (title.length() > 20) {
+                title = title.substr(0, 17) + "...";
+            }
+            ServiceName.setString(title);
             Texts.push_back(ServiceName);
 
             sf::Text ServiceDescription;
             ServiceDescription.setFont(Font);
-            ServiceDescription.setString(services[page*(4*(i-1)+j)].description);
-            ServiceDescription.setCharacterSize(20);
+            ServiceDescription.setCharacterSize(14);
             ServiceDescription.setPosition(30 + (j * 300), (i * 180) + 30);
             ServiceDescription.setFillColor(sf::Color::Black);
+            // Wrap the text if it exceeds a certain length
+            std::string description = services[page*(4*(i-1)+j)].description;
+            ServiceDescription.setString(wrapText(description, 240, Font, 14));
             Texts.push_back(ServiceDescription);
 
             sf::Text ServiceRating;
             ServiceRating.setFont(Font);
-            ServiceRating.setString("Rating: " + std::to_string(services[page*(4*(i-1)+j)].rating));
-            ServiceRating.setCharacterSize(20);
+            ServiceRating.setCharacterSize(14);
             ServiceRating.setPosition(190 + (j * 300), (i * 180));
             ServiceRating.setFillColor(sf::Color::Black);
+            ServiceRating.setString("Rating: " + std::to_string(services[page*(4*(i-1)+j)].rating));
             Texts.push_back(ServiceRating);
         }
     }
+}
+
+std::string MainWindow::wrapText(const std::string &text, float width, const sf::Font &font, unsigned int characterSize)
+{
+    std::istringstream words(text);
+    std::string word;
+    std::string wrappedText;
+    std::string line;
+
+    while (words >> word)
+    {
+        sf::Text temp(line + " " + word, font, characterSize);
+        if (temp.getLocalBounds().width > width)
+        {
+            if (!line.empty())
+            {
+                wrappedText += line + "\n";
+                line.clear();
+            }
+        }
+        if (!line.empty())
+        {
+            line += " ";
+        }
+        line += word;
+    }
+    if (!line.empty())
+    {
+        wrappedText += line;
+    }
+    return wrappedText;
 }
 
 void MainWindow::OpenService(int index)
