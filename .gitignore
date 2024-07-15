@@ -1,4 +1,5 @@
 
 db_password.txt
 CMakeCache.txt
+CMakeFiles/*
 build/*
