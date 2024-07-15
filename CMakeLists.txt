@@ -19,10 +19,13 @@ if (APPLE)
 elseif (WIN32)
     include_directories(${SFML_INCLUDE_DIR} ${PQXX_INCLUDE_DIRS} "C:/Program Files/PostgreSQL/pgxx/include")
     link_directories(${PQXX_LIBRARY_DIRS} "C:/Program Files/PostgreSQL/pgxx/lib")
+elseif (UNIX)
+    include_directories(${SFML_INCLUDE_DIR} ${PQXX_INCLUDE_DIRS} /usr/local/include)
+    link_directories(${PQXX_LIBRARY_DIRS} /usr/local/lib)
 endif()
 
 # Add the executable
 add_executable(ServiceHunter src/main.cpp src/MainWindow.cpp)
 
 # Link SFML and libpqxx libraries
-target_link_libraries(ServiceHunter sfml-graphics sfml-window sfml-system pqxx pq)
+target_link_libraries(ServiceHunter sfml-graphics sfml-window sfml-system pqxx pq pthread)
