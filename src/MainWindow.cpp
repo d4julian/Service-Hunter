@@ -23,37 +23,6 @@ MainWindow::MainWindow()
         std::cout << "Successfully loaded font " << fontPath << std::endl;
     }
 
-    // Load the textures for the icons using absolute paths
-    if (!plumbingTexture.loadFromFile("assets/plumbing.png") ||
-        !haircutTexture.loadFromFile("assets/haircut.png") ||
-        !acRepairTexture.loadFromFile("assets/ac_repair.png") ||
-        !houseCleaningTexture.loadFromFile("assets/house_cleaning.png") ||
-        !makeupArtistTexture.loadFromFile("assets/makeup_artist.png") ||
-        !electricianTexture.loadFromFile("assets/electrician.png") ||
-        !gardeningTexture.loadFromFile("assets/gardening.png") ||
-        !carRepairTexture.loadFromFile("assets/car_repair.png") ||
-        !dogWalkingTexture.loadFromFile("assets/dog_walking.png") ||
-        !yogaInstructorTexture.loadFromFile("assets/yoga_instructor.png") ||
-        !personalTrainerTexture.loadFromFile("assets/personal_trainer.png") ||
-        !computerRepairTexture.loadFromFile("assets/computer_repair.png")) {
-        std::cerr << "Failed to load one or more textures" << std::endl;
-        exit(1);
-    }
-
-    // Set up the sprites
-    plumbingSprite.setTexture(plumbingTexture);
-    haircutSprite.setTexture(haircutTexture);
-    acRepairSprite.setTexture(acRepairTexture);
-    houseCleaningSprite.setTexture(houseCleaningTexture);
-    makeupArtistSprite.setTexture(makeupArtistTexture);
-    electricianSprite.setTexture(electricianTexture);
-    gardeningSprite.setTexture(gardeningTexture);
-    carRepairSprite.setTexture(carRepairTexture);
-    dogWalkingSprite.setTexture(dogWalkingTexture);
-    yogaInstructorSprite.setTexture(yogaInstructorTexture);
-    personalTrainerSprite.setTexture(personalTrainerTexture);
-    computerRepairSprite.setTexture(computerRepairTexture);
-
     page = 1;
     state = "Main";
 
@@ -103,6 +72,13 @@ MainWindow::MainWindow()
     UIText.push_back(Explore);
 
     services = future.get();
+    for (int i = 0; i < services.size(); i++) {
+        string fileName = services[i].title;
+        std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
+        std::replace(fileName.begin(), fileName.end(), ' ', '_');
+        
+        if (!services[i].texture.loadFromFile("assets/" + fileName + ".png")) std::cerr << "Could not load texture: " << fileName << endl;
+    }
 }
 
 void MainWindow::checkFiles() {
@@ -121,7 +97,7 @@ void MainWindow::checkFiles() {
 
     // Absolute path for the password file
     //IMPORTANT : MAKE SURE YOU PUT YOUR OWN PATH
-    std::string passwordPath = "/Service-Hunter/db_password.txt";
+    std::string passwordPath = "./db_password.txt";
     std::cout << "Absolute path for password file: " << passwordPath << std::endl;
 
     std::ifstream passwordFile(passwordPath);
@@ -335,19 +311,7 @@ void MainWindow::Services()
 
             // Set icon position and add to icons vector
             sf::Sprite iconSprite;
-            if (services[index].title == "Plumbing") iconSprite.setTexture(plumbingTexture);
-            else if (services[index].title == "Haircut") iconSprite.setTexture(haircutTexture);
-            else if (services[index].title == "AC Repair") iconSprite.setTexture(acRepairTexture);
-            else if (services[index].title == "House Cleaning") iconSprite.setTexture(houseCleaningTexture);
-            else if (services[index].title == "Makeup Artist") iconSprite.setTexture(makeupArtistTexture);
-            else if (services[index].title == "Electrician") iconSprite.setTexture(electricianTexture);
-            else if (services[index].title == "Gardening") iconSprite.setTexture(gardeningTexture);
-            else if (services[index].title == "Car Repair") iconSprite.setTexture(carRepairTexture);
-            else if (services[index].title == "Dog Walking") iconSprite.setTexture(dogWalkingTexture);
-            else if (services[index].title == "Yoga Instructor") iconSprite.setTexture(yogaInstructorTexture);
-            else if (services[index].title == "Personal Trainer") iconSprite.setTexture(personalTrainerTexture);
-            else if (services[index].title == "Computer Repair") iconSprite.setTexture(computerRepairTexture);
-            else continue;
+            iconSprite.setTexture(services[index].texture);
 
             // Adjust these values to make the icons larger and positioned slightly lower
             sf::Vector2f targetSize(70.0f, 70.0f); // Slightly larger size for the icons
