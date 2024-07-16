@@ -25,8 +25,17 @@ private:
     std::vector<sf::Text> UIText;
     std::vector<sf::RectangleShape> Objects;
     std::vector<sf::Text> Texts;
+    std::vector<sf::Sprite> Icons; // For icons
     std::vector<sf::RectangleShape> ServiceView;
     std::vector<sf::Text> ServiceText;
+
+    // Textures and sprites for icons
+    sf::Texture plumbingTexture, haircutTexture, acRepairTexture, houseCleaningTexture;
+    sf::Texture makeupArtistTexture, electricianTexture, gardeningTexture, carRepairTexture;
+    sf::Texture dogWalkingTexture, yogaInstructorTexture, personalTrainerTexture, computerRepairTexture;
+    sf::Sprite plumbingSprite, haircutSprite, acRepairSprite, houseCleaningSprite;
+    sf::Sprite makeupArtistSprite, electricianSprite, gardeningSprite, carRepairSprite;
+    sf::Sprite dogWalkingSprite, yogaInstructorSprite, personalTrainerSprite, computerRepairSprite;
 
     void OpenService(int index);
     void Events();
