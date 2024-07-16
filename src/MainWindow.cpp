@@ -23,6 +23,37 @@ MainWindow::MainWindow()
         std::cout << "Successfully loaded font " << fontPath << std::endl;
     }
 
+    // Load the textures for the icons using absolute paths
+    if (!plumbingTexture.loadFromFile("assets/plumbing.png") ||
+        !haircutTexture.loadFromFile("assets/haircut.png") ||
+        !acRepairTexture.loadFromFile("assets/ac_repair.png") ||
+        !houseCleaningTexture.loadFromFile("assets/house_cleaning.png") ||
+        !makeupArtistTexture.loadFromFile("assets/makeup_artist.png") ||
+        !electricianTexture.loadFromFile("assets/electrician.png") ||
+        !gardeningTexture.loadFromFile("assets/gardening.png") ||
+        !carRepairTexture.loadFromFile("assets/car_repair.png") ||
+        !dogWalkingTexture.loadFromFile("assets/dog_walking.png") ||
+        !yogaInstructorTexture.loadFromFile("assets/yoga_instructor.png") ||
+        !personalTrainerTexture.loadFromFile("assets/personal_trainer.png") ||
+        !computerRepairTexture.loadFromFile("assets/computer_repair.png")) {
+        std::cerr << "Failed to load one or more textures" << std::endl;
+        exit(1);
+    }
+
+    // Set up the sprites
+    plumbingSprite.setTexture(plumbingTexture);
+    haircutSprite.setTexture(haircutTexture);
+    acRepairSprite.setTexture(acRepairTexture);
+    houseCleaningSprite.setTexture(houseCleaningTexture);
+    makeupArtistSprite.setTexture(makeupArtistTexture);
+    electricianSprite.setTexture(electricianTexture);
+    gardeningSprite.setTexture(gardeningTexture);
+    carRepairSprite.setTexture(carRepairTexture);
+    dogWalkingSprite.setTexture(dogWalkingTexture);
+    yogaInstructorSprite.setTexture(yogaInstructorTexture);
+    personalTrainerSprite.setTexture(personalTrainerTexture);
+    computerRepairSprite.setTexture(computerRepairTexture);
+
     page = 1;
     state = "Main";
 
@@ -79,7 +110,7 @@ void MainWindow::checkFiles() {
     std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
 
     // Use the absolute path for the font file
-    //IMPORTANT : MAKE SURE YOU PUT YOURE OWN PATH
+    //IMPORTANT : MAKE SURE YOU PUT YOUR OWN PATH
     std::string fontPath = "assets/Arial.ttf";
     if (!Font.loadFromFile(fontPath)) {
         std::cerr << "Failed to load font " << fontPath << std::endl;
@@ -89,8 +120,8 @@ void MainWindow::checkFiles() {
     }
 
     // Absolute path for the password file
-    //IMPORTANT : MAKE SURE YOU PUT YOURE OWN PATH
-    std::string passwordPath = "db_password.txt";
+    //IMPORTANT : MAKE SURE YOU PUT YOUR OWN PATH
+    std::string passwordPath = "/Service-Hunter/db_password.txt";
     std::cout << "Absolute path for password file: " << passwordPath << std::endl;
 
     std::ifstream passwordFile(passwordPath);
@@ -205,7 +236,9 @@ void MainWindow::Events()
 
 void MainWindow::Draw()
 {
-    Window.clear(sf::Color::White);
+    sf::Color backgroundColor(231, 231, 231); // Set the background color to match the icon background
+    Window.clear(backgroundColor);
+
     if (state == "Main")
     {
         Services();
@@ -224,6 +257,10 @@ void MainWindow::Draw()
         for (sf::Text Text : Texts)
         {
             Window.draw(Text);
+        }
+        for (auto& icon : Icons)
+        {
+            Window.draw(icon);
         }
         Window.display();
     }
@@ -246,15 +283,21 @@ void MainWindow::Services()
     // Clear previous objects and texts
     Objects.clear();
     Texts.clear();
+    Icons.clear();
+
+    // Set the background color to match the icon background
+    sf::Color backgroundColor(231, 231, 231);
 
     for (int i = 1; i < 4; i++)
     {
         for (int j = 0; j < 4; j++)
         {
+            int index = page*(4*(i-1)+j);
+
             sf::RectangleShape ServiceNode;
             ServiceNode.setSize(sf::Vector2f(250, 150));
             ServiceNode.setPosition(25 + (j * 300), (i * 180));
-            ServiceNode.setFillColor(sf::Color::White);
+            ServiceNode.setFillColor(backgroundColor); // Set the fill color to match the background color
             ServiceNode.setOutlineColor(sf::Color::Black);
             ServiceNode.setOutlineThickness(2);
             Objects.push_back(ServiceNode);
@@ -265,7 +308,7 @@ void MainWindow::Services()
             ServiceName.setPosition(30 + (j * 300), (i * 180));
             ServiceName.setFillColor(sf::Color::Black);
             // Wrap the text if it exceeds a certain length
-            std::string title = services[page*(4*(i-1)+j)].title;
+            std::string title = services[index].title;
             if (title.length() > 20) {
                 title = title.substr(0, 17) + "...";
             }
@@ -278,7 +321,7 @@ void MainWindow::Services()
             ServiceDescription.setPosition(30 + (j * 300), (i * 180) + 30);
             ServiceDescription.setFillColor(sf::Color::Black);
             // Wrap the text if it exceeds a certain length
-            std::string description = services[page*(4*(i-1)+j)].description;
+            std::string description = services[index].description;
             ServiceDescription.setString(wrapText(description, 240, Font, 14));
             Texts.push_back(ServiceDescription);
 
@@ -287,11 +330,40 @@ void MainWindow::Services()
             ServiceRating.setCharacterSize(14);
             ServiceRating.setPosition(190 + (j * 300), (i * 180));
             ServiceRating.setFillColor(sf::Color::Black);
-            ServiceRating.setString("Rating: " + std::to_string(services[page*(4*(i-1)+j)].rating));
+            ServiceRating.setString("Rating: " + std::to_string(services[index].rating));
             Texts.push_back(ServiceRating);
+
+            // Set icon position and add to icons vector
+            sf::Sprite iconSprite;
+            if (services[index].title == "Plumbing") iconSprite.setTexture(plumbingTexture);
+            else if (services[index].title == "Haircut") iconSprite.setTexture(haircutTexture);
+            else if (services[index].title == "AC Repair") iconSprite.setTexture(acRepairTexture);
+            else if (services[index].title == "House Cleaning") iconSprite.setTexture(houseCleaningTexture);
+            else if (services[index].title == "Makeup Artist") iconSprite.setTexture(makeupArtistTexture);
+            else if (services[index].title == "Electrician") iconSprite.setTexture(electricianTexture);
+            else if (services[index].title == "Gardening") iconSprite.setTexture(gardeningTexture);
+            else if (services[index].title == "Car Repair") iconSprite.setTexture(carRepairTexture);
+            else if (services[index].title == "Dog Walking") iconSprite.setTexture(dogWalkingTexture);
+            else if (services[index].title == "Yoga Instructor") iconSprite.setTexture(yogaInstructorTexture);
+            else if (services[index].title == "Personal Trainer") iconSprite.setTexture(personalTrainerTexture);
+            else if (services[index].title == "Computer Repair") iconSprite.setTexture(computerRepairTexture);
+            else continue;
+
+            // Adjust these values to make the icons larger and positioned slightly lower
+            sf::Vector2f targetSize(70.0f, 70.0f); // Slightly larger size for the icons
+            sf::Vector2f textureSize = static_cast<sf::Vector2f>(iconSprite.getTexture()->getSize());
+            iconSprite.setScale(targetSize.x / textureSize.x, targetSize.y / textureSize.y);
+
+            // Center the icon within the box and position it slightly lower
+            float iconX = 25 + (j * 300) + (250 - targetSize.x) / 2;
+            float iconY = (i * 180) + 70; // Increase this value to move the icon lower within the box
+            iconSprite.setPosition(iconX, iconY);
+
+            Icons.push_back(iconSprite);
         }
     }
 }
+
 
 std::string MainWindow::wrapText(const std::string &text, float width, const sf::Font &font, unsigned int characterSize)
 {
