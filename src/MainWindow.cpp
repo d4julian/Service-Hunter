@@ -384,7 +384,7 @@ void MainWindow::OpenService(int index)
 
     sf::Text Description;
     Description.setFont(Font);
-    Description.setString(services[index].description);
+    Description.setString(wrapText(services[index].longDescription, 280, Font, 14));
     Description.setCharacterSize(36);
     Description.setPosition(20, 100);
     Description.setFillColor(sf::Color::Black);

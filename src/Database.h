@@ -85,9 +85,9 @@ public:
         }
         try {
             pqxx::work transaction{*connection};
-            for (auto [id, title, description, rating, provider, cost] : transaction.query<int, string, string, int, string, float>(
-                "SELECT id, title, description, rating, provider, cost FROM service_listings"
-            )) result.push_back(Service(id, provider, title, description, rating, cost));
+            for (auto [id, title, description, longDescription, rating, provider, cost] : transaction.query<int, string, string, string, int, string, float>(
+                "SELECT id, title, description, long_description, rating, provider, cost FROM service_listings"
+            )) result.push_back(Service(id, provider, title, description, longDescription, rating, cost));
         } catch (const exception &e) {
             cerr << e.what() << endl;
         }
