@@ -17,9 +17,27 @@ private:
     std::vector<Service> services;
     std::string state;
     int page;
+
+    sf::Vector2u WindowSize;
+    int height;
+    int width;
+
+    std::string currentUser;
+
+    bool first;
+
     sf::RenderWindow Window;
     sf::Font Font;
     sf::RectangleShape ServiceNodes;
+
+    std::vector<sf::RectangleShape> Login;
+    std::vector<sf::Text> LoginText;
+
+    std::vector<sf::RectangleShape> LoginView;
+    std::vector<sf::Text> LoginViewText;
+    bool loggedin = false;
+
+    sf::Text *Selection;
 
     std::vector<sf::RectangleShape> UI;
     std::vector<sf::Text> UIText;
@@ -29,7 +47,9 @@ private:
     std::vector<sf::RectangleShape> ServiceView;
     std::vector<sf::Text> ServiceText;
 
+    void login();
     void OpenService(int index);
+    void BuildUI();
     void Events();
     void Draw();
     void Services();
