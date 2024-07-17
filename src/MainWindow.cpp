@@ -76,7 +76,7 @@ MainWindow::MainWindow()
         string fileName = services[i].title;
         std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
         std::replace(fileName.begin(), fileName.end(), ' ', '_');
-        
+
         if (!services[i].texture.loadFromFile("assets/" + fileName + ".png")) std::cerr << "Could not load texture: " << fileName << endl;
     }
 }
@@ -133,6 +133,12 @@ void MainWindow::Events()
                 {
                     // First we want to get the position of the click
                     sf::Vector2i clickPosition = sf::Mouse::getPosition(Window);
+                    sf::Vector2u windowSize = Window.getSize();
+                    if (clickPosition.x >= 0 && clickPosition.x < windowSize.x
+                        && clickPosition.y >= 0 && clickPosition.y < windowSize.y)
+                    {
+                        Window.setActive(true);
+                    }
 
                     // And now we are going to check if the click was inside any of the objects
                     for (unsigned int i = 0; i < Objects.size(); ++i)
@@ -392,10 +398,12 @@ void MainWindow::OpenService(int index)
 
     sf::Text Rating;
     Rating.setFont(Font);
-    Rating.setString("Rating: " + std::to_string(services[index].rating));
-    Rating.setCharacterSize(36);
-    Rating.setPosition(20, 200);
-    Rating.setFillColor(sf::Color::Black);
+    Rating.setString(std::to_string(services[index].rating) + "/5 Stars");
+    Rating.setCharacterSize(48);
+    Rating.setPosition(975, 10);
+    Rating.setFillColor(sf::Color::White);
+    Rating.setOutlineColor(sf::Color::Black);
+    Rating.setOutlineThickness(1);
     ServiceText.push_back(Rating);
 
     sf::RectangleShape BackButton;
