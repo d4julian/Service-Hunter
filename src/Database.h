@@ -98,4 +98,27 @@ public:
         return async(launch::async, &Database::getServices, this);
     }
 
+    bool loginUser(const string& username, const string& password) {
+        if (!connection || !connection -> is_open()) {
+            cerr << "Database connection is not open!" << endl;
+            return false;
+        }
+        try {
+            pqxx::work transaction{*connection};
+            pqxx::result result = transaction.exec("SELECT password FROM users WHERE username = " + transaction.quote(username));
+            if (result.empty()) {
+                transaction.exec0("INSERT INTO users (username, password) VALUES (" + transaction.quote(username) + ", " + transaction.quote(password) + ")");
+                transaction.commit();
+                cout << "Registering new user: " << username << endl;
+                return true;
+            }
+            string storedPassword = result[0]["password"].as<string>();
+            return password == storedPassword;
+        } catch (const exception &e) {
+            cerr << e.what() << endl;
+        }
+        return false;
+    }
+
+    
 };

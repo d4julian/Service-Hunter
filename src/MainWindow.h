@@ -17,9 +17,27 @@ private:
     std::vector<Service> services;
     std::string state;
     int page;
+
+    sf::Vector2u WindowSize;
+    int height;
+    int width;
+
+    std::string currentUser, currentPass;
+
+    bool first;
+
     sf::RenderWindow Window;
     sf::Font Font;
     sf::RectangleShape ServiceNodes;
+
+    std::vector<sf::RectangleShape> Login;
+    std::vector<sf::Text> LoginText;
+
+    std::vector<sf::RectangleShape> LoginView;
+    std::vector<sf::Text> LoginViewText;
+    bool loggedin = false;
+
+    sf::Text *Selection;
 
     std::vector<sf::RectangleShape> UI;
     std::vector<sf::Text> UIText;
@@ -29,12 +47,29 @@ private:
     std::vector<sf::RectangleShape> ServiceView;
     std::vector<sf::Text> ServiceText;
 
+    void login();
     void OpenService(int index);
+    void BuildUI();
     void Events();
     void Draw();
     void Services();
     void checkFiles();
     std::string wrapText(const std::string &text, float width, const sf::Font &font, unsigned int characterSize);
+
+    std::string ltrim(const std::string& s) {
+        size_t start = s.find_first_not_of(" \t\n\r\f\v");
+        return (start == std::string::npos) ? "" : s.substr(start);
+    }
+    std::string rtrim(const std::string& s) {
+        size_t end = s.find_last_not_of(" \t\n\r\f\v");
+        return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+    }
+    std::string trim(const std::string& s) {
+        return rtrim(ltrim(s));
+    }
+
+
+
 };
 
 #endif //SERVICEHUNTER_MAINWINDOW_H
