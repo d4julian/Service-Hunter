@@ -3,14 +3,14 @@
 #include <filesystem>
 #include <sstream>
 
+Database database;
+
 MainWindow::MainWindow()
 {
     checkFiles();
 
-    auto future = std::async(std::launch::async, []() {
-        Database database;
-        return database.getServices();
-    });
+    
+    auto future = std::async(std::launch::async, []() { return database.getServices(); });
 
     bool full = true;
 
@@ -323,7 +323,14 @@ void MainWindow::Events() {
                     }
                     else if (LoginView[4].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
                         currentUser = LoginViewText[2].getString();
-                        loggedin = true;
+                        currentPass = LoginViewText[3].getString();
+                        loggedin = database.loginUser(trim(currentUser), trim(currentPass));
+                        std::cout << "User was able to be logged in? " << loggedin << std::endl;
+                        if (!loggedin) {
+                            return;
+                        }
+                        
+
                         state = "Main";
                         LoginText[0].setString("Welcome " + currentUser + "!");
                         LoginView.clear();
@@ -486,7 +493,7 @@ void MainWindow::Services()
             ServiceDescription.setFillColor(sf::Color::Black);
             // Wrap the text if it exceeds a certain length
             std::string description = services[index].description;
-            ServiceDescription.setString(wrapText(description, 240 * widthScale, Font, 14));
+            ServiceDescription.setString(wrapText(description, 240, Font, 14));
             Texts.push_back(ServiceDescription);
 
             sf::Text ServiceRating;
@@ -615,7 +622,7 @@ void MainWindow::login() {
     EnterUsername.setFont(Font);
     EnterUsername.setString("Username");
     EnterUsername.setCharacterSize(24 * std::min(widthScale, heightScale));
-    EnterUsername.setPosition(Center + 5 - (500 * widthScale / 2.0f), Box1 - 40);
+    EnterUsername.setPosition(Center + 5 - (500 * widthScale / 2.0f), Box1 - 50);
     EnterUsername.setFillColor(sf::Color::Black);
     LoginViewText.push_back(EnterUsername);
 
@@ -624,13 +631,13 @@ void MainWindow::login() {
     EnterPassword.setFont(Font);
     EnterPassword.setString("Password");
     EnterPassword.setCharacterSize(24 * std::min(widthScale, heightScale));
-    EnterPassword.setPosition(Center + 5 - (500 * widthScale / 2.0f), Box2 - 40);
+    EnterPassword.setPosition(Center + 5 - (500 * widthScale / 2.0f), Box2 - 50);
     EnterPassword.setFillColor(sf::Color::Black);
     LoginViewText.push_back(EnterPassword);
 
     sf::RectangleShape SignInButton;
 
-    SignInButton.setSize(sf::Vector2f(100 * widthScale, 40 * heightScale));
+    SignInButton.setSize(sf::Vector2f(150 * widthScale, 40 * heightScale));
     SignInButton.setPosition(Center - (100 * widthScale / 2.0f), Box2 + 100);
     SignInButton.setFillColor(sf::Color::White);
     SignInButton.setOutlineColor(sf::Color::Black);
@@ -640,7 +647,7 @@ void MainWindow::login() {
     sf::Text SignIn;
 
     SignIn.setFont(Font);
-    SignIn.setString("Sign In");
+    SignIn.setString("Register/Sign In");
     SignIn.setCharacterSize(24 * std::min(widthScale, heightScale));
     SignIn.setPosition(Center + 20 - (100 * widthScale / 2.0f), Box2 + 105);
     SignIn.setFillColor(sf::Color::Black);
@@ -708,7 +715,7 @@ void MainWindow::OpenService(int index)
 
     sf::Text Description;
     Description.setFont(Font);
-    Description.setString(wrapText(services[index].longDescription, 280 * widthScale, Font, 14));
+    Description.setString(wrapText(services[index].longDescription, 280, Font, 14));
     Description.setCharacterSize(36 * std::min(widthScale, heightScale));
     Description.setPosition(20 * widthScale, 100 * heightScale);
     Description.setFillColor(sf::Color::Black);

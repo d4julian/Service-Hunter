@@ -22,7 +22,7 @@ private:
     int height;
     int width;
 
-    std::string currentUser;
+    std::string currentUser, currentPass;
 
     bool first;
 
@@ -55,6 +55,21 @@ private:
     void Services();
     void checkFiles();
     std::string wrapText(const std::string &text, float width, const sf::Font &font, unsigned int characterSize);
+
+    std::string ltrim(const std::string& s) {
+        size_t start = s.find_first_not_of(" \t\n\r\f\v");
+        return (start == std::string::npos) ? "" : s.substr(start);
+    }
+    std::string rtrim(const std::string& s) {
+        size_t end = s.find_last_not_of(" \t\n\r\f\v");
+        return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+    }
+    std::string trim(const std::string& s) {
+        return rtrim(ltrim(s));
+    }
+
+
+
 };
 
 #endif //SERVICEHUNTER_MAINWINDOW_H
