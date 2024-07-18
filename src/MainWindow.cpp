@@ -188,7 +188,9 @@ void MainWindow::checkFiles() {
     }
 }
 
-void MainWindow::run() {
+void MainWindow::run()
+{
+    Services(std::vector<Service>()); // Call Services with an empty list initially
     while (Window.isOpen()) {
         Events();
         Draw();
@@ -383,18 +385,6 @@ void MainWindow::Draw()
         {
             Window.draw(Text);
         }
-        bool redraw = true;
-        for (sf::RectangleShape Shape : Objects)
-        {
-            if (Shape.getOutlineColor() == sf::Color::Red)
-            {
-                redraw = false;
-            }
-        }
-        if (redraw)
-        {
-            Services();
-        }
         for (sf::RectangleShape Shape : Objects)
         {
             Window.draw(Shape);
@@ -444,7 +434,7 @@ void MainWindow::Draw()
     }
 }
 
-void MainWindow::Services()
+void MainWindow::Services(const std::vector<Service>& servicesToShow)
 {
     // Clear previous objects and texts
     Objects.clear();
@@ -460,12 +450,13 @@ void MainWindow::Services()
     float widthScale = static_cast<float>(currentSize.x) / baseSize.x;
     float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
 
-    for (int i = 1; i < 4; i++)
-    {
-        for (int j = 0; j < 4; j++)
-        {
-            int index = page*(4*(i-1)+j);
+    int serviceCount = servicesToShow.size();
+    int index = 0;
 
+    for (int i = 1; i < 4 && index < serviceCount; i++)
+    {
+        for (int j = 0; j < 4 && index < serviceCount; j++, index++)
+        {
             sf::RectangleShape ServiceNode;
             ServiceNode.setSize(sf::Vector2f(250 * widthScale, 150 * heightScale));
             ServiceNode.setPosition(widthScale*(25 + (j * 300)), heightScale*(i * 180));
@@ -480,7 +471,7 @@ void MainWindow::Services()
             ServiceName.setPosition(widthScale*(30 + (j * 300)), heightScale*(i * 180));
             ServiceName.setFillColor(sf::Color::Black);
             // Wrap the text if it exceeds a certain length
-            std::string title = services[index].title;
+            std::string title = servicesToShow[index].title;
             if (title.length() > 20) {
                 title = title.substr(0, 17) + "...";
             }
@@ -493,7 +484,7 @@ void MainWindow::Services()
             ServiceDescription.setPosition(widthScale*(30 + (j * 300)), heightScale*(i * 180) + 30);
             ServiceDescription.setFillColor(sf::Color::Black);
             // Wrap the text if it exceeds a certain length
-            std::string description = services[index].description;
+            std::string description = servicesToShow[index].description;
             ServiceDescription.setString(wrapText(description, 240, Font, 14));
             Texts.push_back(ServiceDescription);
 
@@ -502,12 +493,12 @@ void MainWindow::Services()
             ServiceRating.setCharacterSize(14*std::min(widthScale, heightScale));
             ServiceRating.setPosition(widthScale*(225 + (j * 300)), heightScale*(i * 180));
             ServiceRating.setFillColor(sf::Color::Black);
-            ServiceRating.setString(std::to_string(services[index].rating) + "/5 Stars");
+            ServiceRating.setString(std::to_string(servicesToShow[index].rating) + "/5 Stars");
             Texts.push_back(ServiceRating);
 
             // Set icon position and add to icons vector
             sf::Sprite iconSprite;
-            iconSprite.setTexture(services[index].texture);
+            iconSprite.setTexture(servicesToShow[index].texture);
 
             // Adjust these values to make the icons larger and positioned slightly lower
             sf::Vector2f targetSize(70.0f, 70.0f); // Slightly larger size for the icons
@@ -523,6 +514,7 @@ void MainWindow::Services()
         }
     }
 }
+
 
 void MainWindow::login() {
 
