@@ -229,7 +229,7 @@ void MainWindow::Events() {
                 }
             } else if (Event.type == sf::Event::TextEntered) {
                 if (Event.text.unicode < 128) {
-                    if (Event.text.unicode != 8) {
+                    if (Event.text.unicode != 8) { // 8 is the ASCII value for backspace
                         UIText[1].setString(UIText[1].getString() + Event.text.unicode);
                     }
                 }
@@ -243,7 +243,8 @@ void MainWindow::Events() {
                     }
                 }
                 if (Event.key.code == sf::Keyboard::Enter) {
-                    // Implementation for the search yet to be done
+                    std::string query = UIText[1].getString();
+                    PerformSearch(query); // Call a function to handle the search
                 }
             } else if (Event.type == sf::Event::MouseMoved) {
                 sf::Vector2i mousePosition = sf::Mouse::getPosition(Window);
