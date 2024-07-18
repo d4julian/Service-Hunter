@@ -52,7 +52,7 @@ private:
     void BuildUI();
     void Events();
     void Draw();
-    void Services();
+    void Services(const std::vector<Service>& servicesToShow);
     void checkFiles();
     std::string wrapText(const std::string &text, float width, const sf::Font &font, unsigned int characterSize);
 
@@ -68,7 +68,8 @@ private:
         return rtrim(ltrim(s));
     }
 
-    void PerformSearch(const std::string& query) {
+    void PerformSearch(const std::string& query)
+    {
         std::vector<Service> results;
         for (const auto& service : services) {
             if (service.title.find(query) != std::string::npos) {
@@ -76,12 +77,9 @@ private:
             }
         }
 
-        // Display the results (here, just printing them out for simplicity)
+        // Display the results on the application
         if (!results.empty()) {
-            std::cout << "Related services found:\n";
-            for (const auto& result : results) {
-                std::cout << "- " << result.title << "\n";
-            }
+            Services(results);
         } else {
             std::cout << "No related services found.\n";
         }
