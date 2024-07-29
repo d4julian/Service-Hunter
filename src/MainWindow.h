@@ -68,22 +68,7 @@ private:
         return rtrim(ltrim(s));
     }
 
-    void PerformSearch(const std::string& query)
-    {
-        std::vector<Service> results;
-        for (const auto& service : services) {
-            if (service.title.find(query) != std::string::npos) {
-                results.push_back(service);
-            }
-        }
-
-        // Display the results on the application
-        if (!results.empty()) {
-            Services(results);
-        } else {
-            std::cout << "No related services found.\n";
-        }
-    }
+    void PerformSearch(const std::string& query);
 
 };
 
