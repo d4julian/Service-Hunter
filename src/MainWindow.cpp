@@ -2,6 +2,7 @@
 #include "Database.h"
 #include <filesystem>
 #include <sstream>
+#include <algorithm> // Include algorithm for transform
 
 Database database;
 
@@ -9,14 +10,12 @@ MainWindow::MainWindow()
 {
     checkFiles();
 
-    
     auto future = std::async(std::launch::async, []() { return database.getServices(); });
 
     bool full = true;
 
     int widt;
     int heigh;
-    // This is if you want the window to be full
     if (full)
     {
         widt = sf::VideoMode::getDesktopMode().width;
@@ -32,7 +31,6 @@ MainWindow::MainWindow()
 
     bool first = true;
 
-    // Use the absolute path for the font file
     std::string fontPath = "assets/Arial.ttf";
     if (!Font.loadFromFile(fontPath)) {
         std::cerr << "Failed to load font " << fontPath << std::endl;
@@ -47,12 +45,17 @@ MainWindow::MainWindow()
 
     services = future.get();
     for (int i = 0; i < services.size(); i++) {
-        string fileName = services[i].title;
+        std::string fileName = services[i].title;
         std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
         std::replace(fileName.begin(), fileName.end(), ' ', '_');
 
-        if (!services[i].texture.loadFromFile("assets/" + fileName + ".png")) std::cerr << "Could not load texture: " << fileName << endl;
+        if (!services[i].texture.loadFromFile("assets/" + fileName + ".png")) {
+            std::cerr << "Could not load texture: " << fileName << std::endl;
+        }
     }
+
+    // Display all services initially
+    Services(services);
 }
 
 void MainWindow::BuildUI()
@@ -188,9 +191,10 @@ void MainWindow::checkFiles() {
     }
 }
 
+
 void MainWindow::run()
 {
-    Services(std::vector<Service>()); // Call Services with an empty list initially
+    Services(services); // Display all services initially
     while (Window.isOpen()) {
         Events();
         Draw();
@@ -205,7 +209,6 @@ void MainWindow::Events() {
                 Window.close();
             } else if (Event.type == sf::Event::MouseButtonPressed) {
                 if (Event.mouseButton.button == sf::Mouse::Left) {
-                    // First we want to get the position of the click
                     sf::Vector2i clickPosition = sf::Mouse::getPosition(Window);
                     sf::Vector2u windowSize = Window.getSize();
                     if (clickPosition.x >= 0 && clickPosition.x < windowSize.x
@@ -213,7 +216,6 @@ void MainWindow::Events() {
                         Window.setActive(true);
                     }
 
-                    // And now we are going to check if the click was inside any of the objects
                     for (unsigned int i = 0; i < Objects.size(); ++i) {
                         if (Objects[i].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
                             OpenService(i);
@@ -231,7 +233,7 @@ void MainWindow::Events() {
                 }
             } else if (Event.type == sf::Event::TextEntered) {
                 if (Event.text.unicode < 128) {
-                    if (Event.text.unicode != 8) { // 8 is the ASCII value for backspace
+                    if (Event.text.unicode != 8) {
                         UIText[1].setString(UIText[1].getString() + Event.text.unicode);
                     }
                 }
@@ -332,7 +334,6 @@ void MainWindow::Events() {
                         if (!loggedin) {
                             return;
                         }
-                        
 
                         state = "Main";
                         LoginText[0].setString("Welcome " + currentUser + "!");
@@ -357,22 +358,22 @@ void MainWindow::Events() {
                 }
             }
             else if (Event.type == sf::Event::MouseMoved) {
-                    sf::Vector2i mousePosition = sf::Mouse::getPosition(Window);
-                    for (unsigned int i = 0; i < LoginView.size(); ++i) {
-                        if (LoginView[i].getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
-                            LoginView[i].setOutlineColor(sf::Color::Red);
-                        } else {
-                            LoginView[i].setOutlineColor(sf::Color::Black);
-                        }
+                sf::Vector2i mousePosition = sf::Mouse::getPosition(Window);
+                for (unsigned int i = 0; i < LoginView.size(); ++i) {
+                    if (LoginView[i].getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
+                        LoginView[i].setOutlineColor(sf::Color::Red);
+                    } else {
+                        LoginView[i].setOutlineColor(sf::Color::Black);
                     }
                 }
             }
         }
     }
+}
 
 void MainWindow::Draw()
 {
-    sf::Color backgroundColor(231, 231, 231); // Set the background color to match the icon background
+    sf::Color backgroundColor(231, 231, 231);
     Window.clear(backgroundColor);
 
     if (state == "Main")
@@ -436,12 +437,10 @@ void MainWindow::Draw()
 
 void MainWindow::Services(const std::vector<Service>& servicesToShow)
 {
-    // Clear previous objects and texts
     Objects.clear();
     Texts.clear();
     Icons.clear();
 
-    // Set the background color to match the icon background
     sf::Color backgroundColor(231, 231, 231);
 
     sf::Vector2u baseSize(1200.0f, 800.0f);
@@ -459,8 +458,8 @@ void MainWindow::Services(const std::vector<Service>& servicesToShow)
         {
             sf::RectangleShape ServiceNode;
             ServiceNode.setSize(sf::Vector2f(250 * widthScale, 150 * heightScale));
-            ServiceNode.setPosition(widthScale*(25 + (j * 300)), heightScale*(i * 180));
-            ServiceNode.setFillColor(backgroundColor); // Set the fill color to match the background color
+            ServiceNode.setPosition(widthScale * (25 + (j * 300)), heightScale * (i * 180));
+            ServiceNode.setFillColor(backgroundColor);
             ServiceNode.setOutlineColor(sf::Color::Black);
             ServiceNode.setOutlineThickness(2);
             Objects.push_back(ServiceNode);
@@ -468,9 +467,8 @@ void MainWindow::Services(const std::vector<Service>& servicesToShow)
             sf::Text ServiceName;
             ServiceName.setFont(Font);
             ServiceName.setCharacterSize(18 * std::min(widthScale, heightScale));
-            ServiceName.setPosition(widthScale*(30 + (j * 300)), heightScale*(i * 180));
+            ServiceName.setPosition(widthScale * (30 + (j * 300)), heightScale * (i * 180));
             ServiceName.setFillColor(sf::Color::Black);
-            // Wrap the text if it exceeds a certain length
             std::string title = servicesToShow[index].title;
             if (title.length() > 20) {
                 title = title.substr(0, 17) + "...";
@@ -480,34 +478,28 @@ void MainWindow::Services(const std::vector<Service>& servicesToShow)
 
             sf::Text ServiceDescription;
             ServiceDescription.setFont(Font);
-            ServiceDescription.setCharacterSize(14*std::min(widthScale, heightScale));
-            ServiceDescription.setPosition(widthScale*(30 + (j * 300)), heightScale*(i * 180) + 30);
+            ServiceDescription.setCharacterSize(14 * std::min(widthScale, heightScale));
+            ServiceDescription.setPosition(widthScale * (30 + (j * 300)), heightScale * (i * 180) + 30);
             ServiceDescription.setFillColor(sf::Color::Black);
-            // Wrap the text if it exceeds a certain length
             std::string description = servicesToShow[index].description;
             ServiceDescription.setString(wrapText(description, 240, Font, 14));
             Texts.push_back(ServiceDescription);
 
             sf::Text ServiceRating;
             ServiceRating.setFont(Font);
-            ServiceRating.setCharacterSize(14*std::min(widthScale, heightScale));
-            ServiceRating.setPosition(widthScale*(225 + (j * 300)), heightScale*(i * 180));
+            ServiceRating.setCharacterSize(14 * std::min(widthScale, heightScale));
+            ServiceRating.setPosition(widthScale * (225 + (j * 300)), heightScale * (i * 180));
             ServiceRating.setFillColor(sf::Color::Black);
             ServiceRating.setString(std::to_string(servicesToShow[index].rating) + "/5 Stars");
             Texts.push_back(ServiceRating);
 
-            // Set icon position and add to icons vector
             sf::Sprite iconSprite;
             iconSprite.setTexture(servicesToShow[index].texture);
-
-            // Adjust these values to make the icons larger and positioned slightly lower
-            sf::Vector2f targetSize(70.0f, 70.0f); // Slightly larger size for the icons
+            sf::Vector2f targetSize(70.0f, 70.0f);
             sf::Vector2f textureSize = static_cast<sf::Vector2f>(iconSprite.getTexture()->getSize());
             iconSprite.setScale(targetSize.x / textureSize.x, targetSize.y / textureSize.y);
-
-            // Center the icon within the box and position it slightly lower
-            float iconX = widthScale*(25 + (j * 300) + (250 - targetSize.x) / 2);
-            float iconY = heightScale*((i * 180) + 70); // Increase this value to move the icon lower within the box
+            float iconX = widthScale * (25 + (j * 300) + (250 - targetSize.x) / 2);
+            float iconY = heightScale * ((i * 180) + 70);
             iconSprite.setPosition(iconX, iconY);
 
             Icons.push_back(iconSprite);
@@ -515,9 +507,8 @@ void MainWindow::Services(const std::vector<Service>& servicesToShow)
     }
 }
 
-
-void MainWindow::login() {
-
+void MainWindow::login()
+{
     LoginView.clear();
     LoginViewText.clear();
 
@@ -562,8 +553,6 @@ void MainWindow::login() {
     BackText.setPosition(30 * widthScale, 705 * heightScale);
     BackText.setFillColor(sf::Color::Black);
     LoginViewText.push_back(BackText);
-
-    // The below operations are to actually center the items on the page
 
     float Center = currentSize.x / 2.0f;
     float CenterVert = currentSize.y / 2.0f;
@@ -739,4 +728,23 @@ void MainWindow::OpenService(int index)
     BackText.setPosition(30 * widthScale, 705 * heightScale);
     BackText.setFillColor(sf::Color::Black);
     ServiceText.push_back(BackText);
+}
+
+void MainWindow::PerformSearch(const std::string& query) {
+    std::vector<Service> results;
+    std::string lowerQuery = query;
+    std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(), ::tolower); // Convert query to lowercase
+    for (const auto& service : services) {
+        std::string lowerTitle = service.title;
+        std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower); // Convert service title to lowercase
+        if (lowerTitle.find(lowerQuery) != std::string::npos) {
+            results.push_back(service);
+        }
+    }
+
+    if (!results.empty()) {
+        Services(results);
+    } else {
+        std::cout << "No related services found.\n";
+    }
 }
