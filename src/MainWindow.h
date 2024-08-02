@@ -52,7 +52,7 @@ private:
     void BuildUI();
     void Events();
     void Draw();
-    void Services(const std::vector<Service>& servicesToShow);
+    void Services(std::vector<std::reference_wrapper<Service>>& servicesToShow);
     void checkFiles();
     std::string wrapText(const std::string &text, float width, const sf::Font &font, unsigned int characterSize);
 

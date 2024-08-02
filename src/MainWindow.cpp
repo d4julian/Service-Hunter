@@ -29,8 +29,6 @@ MainWindow::MainWindow()
 
     Window.create(sf::VideoMode(widt, heigh), "Service Hunter");
 
-    bool first = true;
-
     std::string fontPath = "assets/Arial.ttf";
     if (!Font.loadFromFile(fontPath)) {
         std::cerr << "Failed to load font " << fontPath << std::endl;
@@ -51,11 +49,22 @@ MainWindow::MainWindow()
 
         if (!services[i].texture.loadFromFile("assets/" + fileName + ".png")) {
             std::cerr << "Could not load texture: " << fileName << std::endl;
+        } else {
+            sf::Sprite iconSprite;
+            iconSprite.setTexture(services[i].texture);
+            sf::Vector2f targetSize(70.0f, 70.0f);
+            sf::Vector2f textureSize = static_cast<sf::Vector2f>(iconSprite.getTexture()->getSize());
+            iconSprite.setScale(targetSize.x / textureSize.x, targetSize.y / textureSize.y);
+            services[i].icon = iconSprite;
         }
     }
 
-    // Display all services initially
-    Services(services);
+    // Display first 12 services initially
+    std::vector<std::reference_wrapper<Service>> servicesReference;
+    for (int i = 0; i < 12; i++) {
+        servicesReference.push_back(std::ref(services[i]));
+    }
+    Services(servicesReference);
 }
 
 void MainWindow::BuildUI()
@@ -194,7 +203,6 @@ void MainWindow::checkFiles() {
 
 void MainWindow::run()
 {
-    Services(services); // Display all services initially
     while (Window.isOpen()) {
         Events();
         Draw();
@@ -394,9 +402,9 @@ void MainWindow::Draw()
         {
             Window.draw(Text);
         }
-        for (auto& icon : Icons)
+        for (const auto& service : services)
         {
-            Window.draw(icon);
+            if (service.visible) Window.draw(service.icon);
         }
         if (loggedin)
         {
@@ -435,11 +443,10 @@ void MainWindow::Draw()
     }
 }
 
-void MainWindow::Services(const std::vector<Service>& servicesToShow)
+void MainWindow::Services(std::vector<std::reference_wrapper<Service>>& servicesToShow)
 {
     Objects.clear();
     Texts.clear();
-    Icons.clear();
 
     sf::Color backgroundColor(231, 231, 231);
 
@@ -469,7 +476,7 @@ void MainWindow::Services(const std::vector<Service>& servicesToShow)
             ServiceName.setCharacterSize(18 * std::min(widthScale, heightScale));
             ServiceName.setPosition(widthScale * (30 + (j * 300)), heightScale * (i * 180));
             ServiceName.setFillColor(sf::Color::Black);
-            std::string title = servicesToShow[index].title;
+            std::string title = servicesToShow[index].get().title;
             if (title.length() > 20) {
                 title = title.substr(0, 17) + "...";
             }
@@ -481,7 +488,7 @@ void MainWindow::Services(const std::vector<Service>& servicesToShow)
             ServiceDescription.setCharacterSize(14 * std::min(widthScale, heightScale));
             ServiceDescription.setPosition(widthScale * (30 + (j * 300)), heightScale * (i * 180) + 30);
             ServiceDescription.setFillColor(sf::Color::Black);
-            std::string description = servicesToShow[index].description;
+            std::string description = servicesToShow[index].get().description;
             ServiceDescription.setString(wrapText(description, 240, Font, 14));
             Texts.push_back(ServiceDescription);
 
@@ -490,19 +497,17 @@ void MainWindow::Services(const std::vector<Service>& servicesToShow)
             ServiceRating.setCharacterSize(14 * std::min(widthScale, heightScale));
             ServiceRating.setPosition(widthScale * (225 + (j * 300)), heightScale * (i * 180));
             ServiceRating.setFillColor(sf::Color::Black);
-            ServiceRating.setString(std::to_string(servicesToShow[index].rating) + "/5 Stars");
+            ServiceRating.setString(std::to_string(servicesToShow[index].get().rating) + "/5 Stars");
             Texts.push_back(ServiceRating);
 
-            sf::Sprite iconSprite;
-            iconSprite.setTexture(servicesToShow[index].texture);
+            servicesToShow[index].get().visible = true;
+
+            sf::Sprite& icon = servicesToShow[index].get().icon;
             sf::Vector2f targetSize(70.0f, 70.0f);
-            sf::Vector2f textureSize = static_cast<sf::Vector2f>(iconSprite.getTexture()->getSize());
-            iconSprite.setScale(targetSize.x / textureSize.x, targetSize.y / textureSize.y);
             float iconX = widthScale * (25 + (j * 300) + (250 - targetSize.x) / 2);
             float iconY = heightScale * ((i * 180) + 70);
-            iconSprite.setPosition(iconX, iconY);
-
-            Icons.push_back(iconSprite);
+            icon.setPosition(iconX, iconY);
+            
         }
     }
 }
@@ -731,20 +736,21 @@ void MainWindow::OpenService(int index)
 }
 
 void MainWindow::PerformSearch(const std::string& query) {
-    std::vector<Service> results;
+    std::vector<std::reference_wrapper<Service>> results;
     std::string lowerQuery = query;
     std::transform(lowerQuery.begin(), lowerQuery.end(), lowerQuery.begin(), ::tolower); // Convert query to lowercase
-    for (const auto& service : services) {
+    for (auto& service : services) {
+        service.visible = false;
         std::string lowerTitle = service.title;
         std::transform(lowerTitle.begin(), lowerTitle.end(), lowerTitle.begin(), ::tolower); // Convert service title to lowercase
+        
         if (lowerTitle.find(lowerQuery) != std::string::npos) {
             results.push_back(service);
         }
     }
 
-    if (!results.empty()) {
-        Services(results);
-    } else {
+    Services(results);
+    if (results.empty()) {
         std::cout << "No related services found.\n";
     }
 }
