@@ -43,7 +43,7 @@ MainWindow::MainWindow()
 
     services = future.get();
     for (int i = 0; i < services.size(); i++) {
-        std::string fileName = services[i].title;
+        std::string fileName = services[i].category;
         std::transform(fileName.begin(), fileName.end(), fileName.begin(), ::tolower);
         std::replace(fileName.begin(), fileName.end(), ' ', '_');
 
