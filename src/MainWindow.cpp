@@ -72,7 +72,6 @@ void MainWindow::BuildUI()
     sf::Vector2u size = Window.getSize();
     int w = size.x;
     int h = size.y;
-    std::cout << w << " " << h << std::endl;
     if (w == width && h == height)
     {
         return;
@@ -169,6 +168,51 @@ void MainWindow::BuildUI()
     LoginTex.setFillColor(sf::Color::Black);
     LoginText.push_back(LoginTex);
 
+    float buttonWidth = 100 * widthScale;
+    float buttonHeight = 40 * heightScale;
+    float pageNumWidth = 100 * widthScale;
+    float centerX = currentSize.x / 2.0f;
+
+    sf::RectangleShape PrevButton;
+    PrevButton.setSize(sf::Vector2f(buttonWidth, buttonHeight));
+    PrevButton.setPosition(centerX - pageNumWidth - buttonWidth, 700 * heightScale);
+    PrevButton.setFillColor(sf::Color::White);
+    PrevButton.setOutlineColor(sf::Color::Black);
+    PrevButton.setOutlineThickness(2);
+    Pages.push_back(PrevButton);
+
+    sf::Text PrevText;
+    PrevText.setFont(Font);
+    PrevText.setString("Previous");
+    PrevText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    PrevText.setPosition(centerX - pageNumWidth - buttonWidth + 10 * widthScale, 705 * heightScale);
+    PrevText.setFillColor(sf::Color::Black);
+    PageTexts.push_back(PrevText);
+
+    sf::Text PageNum;
+    PageNum.setFont(Font);
+    PageNum.setString(std::to_string(page));
+    PageNum.setCharacterSize(24 * std::min(widthScale, heightScale));
+    PageNum.setPosition(centerX - 5, 705 * heightScale);
+    PageNum.setFillColor(sf::Color::Black);
+    PageTexts.push_back(PageNum);
+
+    sf::RectangleShape NextButton;
+    NextButton.setSize(sf::Vector2f(buttonWidth, buttonHeight));
+    NextButton.setPosition(centerX + pageNumWidth, 700 * heightScale);
+    NextButton.setFillColor(sf::Color::White);
+    NextButton.setOutlineColor(sf::Color::Black);
+    NextButton.setOutlineThickness(2);
+    Pages.push_back(NextButton);
+
+    sf::Text NextText;
+    NextText.setFont(Font);
+    NextText.setString("Next");
+    NextText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    NextText.setPosition(centerX + pageNumWidth + 10 * widthScale, 705 * heightScale);
+    NextText.setFillColor(sf::Color::Black);
+    PageTexts.push_back(NextText);
+
     WindowSize = currentSize;
 }
 
@@ -235,6 +279,21 @@ void MainWindow::Events() {
                             }
                         }
                     }
+
+                    if (Pages[0].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
+                        if (page > 1) {
+                            page--;
+                            PageTexts[1].setString(to_string(page));
+                            PageNavigation(page);
+                        }
+                    } else if (Pages[1].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
+                        if (page < (services.size() + 11) / 12) {
+                            page++;
+                            PageTexts[1].setString(to_string(page));
+                            PageNavigation(page);
+                        }
+                    }
+
                     if (Login[0].getGlobalBounds().contains(clickPosition.x, clickPosition.y) && !loggedin) {
                         login();
                         break;
@@ -261,7 +320,15 @@ void MainWindow::Events() {
                 }
                 if (Event.key.code == sf::Keyboard::Enter) {
                     std::string query = UIText[1].getString();
-                    PerformSearch(query); // Call a function to handle the search
+                    if (query == "Search Services" || query == "") {
+                        PerformSearch(query); // Call a function to handle the search
+                        searching = false;
+                    }
+                    else
+                    {
+                        PerformSearch(query); // Call a function to handle the search
+                        searching = true;
+                    }
                 }
             } else if (Event.type == sf::Event::MouseMoved) {
                 sf::Vector2i mousePosition = sf::Mouse::getPosition(Window);
@@ -467,6 +534,20 @@ void MainWindow::Draw()
         for (const auto& service : services)
         {
             if (service.visible) Window.draw(service.icon);
+        }
+        if (!searching)
+        {
+            Window.draw(PageTexts[1]);
+            if (page > 1)
+            {
+                Window.draw(Pages[0]);
+                Window.draw(PageTexts[0]);
+            }
+            if (page < (services.size() + 11) / 12)
+            {
+                Window.draw(Pages[1]);
+                Window.draw(PageTexts[2]);
+            }
         }
         if (loggedin)
         {
@@ -940,4 +1021,24 @@ void MainWindow::AddReview(Service *service, int rating)
     RatingText.setPosition(760 * widthScale, 125 * heightScale);
     RatingText.setFillColor(sf::Color::Black);
     ServiceText.push_back(RatingText);
+}
+
+void MainWindow::PageNavigation(int page)
+{
+    for (auto& service : services)
+    {
+        service.visible = false;
+    }
+    std::vector<std::reference_wrapper<Service>> servicesToShow;
+    int start = (page - 1) * 12;
+    int end = start + 12;
+    for (int i = start; i < end; i++)
+    {
+        if (i < services.size())
+        {
+            services[i].visible = true;
+            servicesToShow.push_back(services[i]);
+        }
+    }
+    Services(servicesToShow);
 }

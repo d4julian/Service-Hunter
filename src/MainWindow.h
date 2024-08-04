@@ -39,8 +39,12 @@ private:
     std::vector<sf::RectangleShape> LoginView;
     std::vector<sf::Text> LoginViewText;
     bool loggedin = false;
+    bool searching = false;
 
     sf::Text *Selection;
+
+    std::vector<sf::RectangleShape> Pages;
+    std::vector<sf::Text> PageTexts;
 
     std::vector<sf::RectangleShape> UI;
     std::vector<sf::Text> UIText;
@@ -53,6 +57,8 @@ private:
     std::vector<sf::Text> RatingOptions;
     std::vector<sf::RectangleShape> RatingShapes;
     int rating;
+
+    void PageNavigation(int page);
 
     void AddReview(Service *service, int);
     void RatingObjects();
