@@ -340,9 +340,9 @@ void MainWindow::Events() {
                         loggedin = database.loginUser(trim(currentUser), trim(currentPass));
                         std::cout << "User was able to be logged in? " << loggedin << std::endl;
                         if (!loggedin) {
+                            LoginViewText[4].setFillColor(sf::Color::Red);
                             return;
                         }
-
                         state = "Main";
                         LoginText[0].setString("Welcome " + currentUser + "!");
                         LoginView.clear();
@@ -636,9 +636,17 @@ void MainWindow::login()
     SignIn.setFont(Font);
     SignIn.setString("Register/Sign In");
     SignIn.setCharacterSize(24 * std::min(widthScale, heightScale));
-    SignIn.setPosition(Center + 20 - (100 * widthScale / 2.0f), Box2 + 105);
+    SignIn.setPosition(Center + 5 - (100 * widthScale / 2.0f), Box2 + 105);
     SignIn.setFillColor(sf::Color::Black);
     LoginViewText.push_back(SignIn);
+
+    sf::Text Error;
+    Error.setFont(Font);
+    Error.setString("Invalid username or password.");
+    Error.setCharacterSize(24 * std::min(widthScale, heightScale));
+    Error.setPosition(Center + 130 - (500 * widthScale / 2.0f), Box1 - 50);
+    Error.setFillColor(Logo);
+    LoginViewText.push_back(Error);
 }
 
 std::string MainWindow::wrapText(const std::string &text, float width, const sf::Font &font, unsigned int characterSize)
