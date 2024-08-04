@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <future>
+#include <numeric>
 #include "Service.h"
 
 class MainWindow {
@@ -25,6 +26,8 @@ private:
     std::string currentUser, currentPass;
 
     bool first;
+
+    Service* CurrentSelection;
 
     sf::RenderWindow Window;
     sf::Font Font;
@@ -47,6 +50,12 @@ private:
     std::vector<sf::RectangleShape> ServiceView;
     std::vector<sf::Text> ServiceText;
 
+    std::vector<sf::Text> RatingOptions;
+    std::vector<sf::RectangleShape> RatingShapes;
+    int rating;
+
+    void AddReview(Service *service, int);
+    void RatingObjects();
     void login();
     void OpenService(int index);
     void BuildUI();

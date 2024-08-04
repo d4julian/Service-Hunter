@@ -200,7 +200,6 @@ void MainWindow::checkFiles() {
     }
 }
 
-
 void MainWindow::run()
 {
     while (Window.isOpen()) {
@@ -226,8 +225,14 @@ void MainWindow::Events() {
 
                     for (unsigned int i = 0; i < Objects.size(); ++i) {
                         if (Objects[i].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
-                            OpenService(i);
-                            break;
+                            for (int j = 0; j < services.size(); j++)
+                            {
+                                if (Texts[i * 3].getString().toAnsiString() == services[j].title && services[j].visible) {
+                                    CurrentSelection = &services[j];
+                                    OpenService(j);
+                                    break;
+                                }
+                            }
                         }
                     }
                     if (Login[0].getGlobalBounds().contains(clickPosition.x, clickPosition.y) && !loggedin) {
@@ -296,8 +301,45 @@ void MainWindow::Events() {
                                 state = "Main";
                                 ServiceView.clear();
                                 ServiceText.clear();
+                                RatingOptions.clear();
+                                RatingShapes.clear();
+                                CurrentSelection = nullptr;
                             }
-                            break;
+                            if (i == 2)
+                            {
+                                ServiceView.erase(ServiceView.begin() + i);
+                                ServiceText.erase(ServiceText.begin() + i*2);
+                                RatingObjects();
+                            }
+                        }
+                    }
+                    if (RatingOptions.size() > 0) {
+                        for (int i = 0; i < RatingShapes.size(); ++i) {
+                            if (RatingShapes[i].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
+                                if (i == 5) {
+                                    std::cout << i << " " << rating << std::endl;
+                                    if (rating <= 5 && rating >= 1)
+                                    {
+                                        AddReview(CurrentSelection, rating);
+                                    }
+                                    else
+                                    {
+                                        RatingOptions[7].setFillColor(sf::Color::Red);
+                                    }
+                                    break;
+                                }
+                                else
+                                {
+                                    RatingShapes[i].setOutlineColor(sf::Color::Red);
+                                    RatingShapes[i].setOutlineThickness(3);
+                                    rating = i + 1;
+                                }
+                            }
+                            else
+                            {
+                                RatingShapes[i].setOutlineColor(sf::Color::Black);
+                                RatingShapes[i].setOutlineThickness(1);
+                            }
                         }
                     }
                 }
@@ -308,6 +350,20 @@ void MainWindow::Events() {
                         ServiceView[i].setOutlineColor(sf::Color::Red);
                     } else {
                         ServiceView[i].setOutlineColor(sf::Color::Black);
+                    }
+                }
+                if (RatingShapes.size() > 0) {
+                    for (unsigned int i = 0; i < 5; i++) {
+                        if (RatingShapes[i].getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
+                            RatingShapes[i].setOutlineColor(sf::Color::Red);
+                        } else {
+                            RatingShapes[i].setOutlineColor(sf::Color::Black);
+                        }
+                    }
+                    if (RatingShapes[5].getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
+                        RatingShapes[5].setOutlineColor(sf::Color::Red);
+                    } else {
+                        RatingShapes[5].setOutlineColor(sf::Color::Black);
                     }
                 }
             }
@@ -340,11 +396,17 @@ void MainWindow::Events() {
                         loggedin = database.loginUser(trim(currentUser), trim(currentPass));
                         std::cout << "User was able to be logged in? " << loggedin << std::endl;
                         if (!loggedin) {
-                            LoginViewText[4].setFillColor(sf::Color::Red);
+                            LoginViewText[7].setFillColor(sf::Color::Red);
                             return;
                         }
                         state = "Main";
+                        sf::Vector2u baseSize(1200.0f, 800.0f);
+                        sf::Vector2u currentSize = Window.getSize();
+
+                        float widthScale = static_cast<float>(currentSize.x) / baseSize.x;
+                        float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
                         LoginText[0].setString("Welcome " + currentUser + "!");
+                        LoginText[0].setPosition(1000 * widthScale , 25 * heightScale);
                         LoginView.clear();
                         LoginViewText.clear();
                     }
@@ -427,6 +489,17 @@ void MainWindow::Draw()
         {
             Window.draw(Text);
         }
+        if (RatingShapes.size() > 0 && RatingOptions.size() > 0)
+        {
+            for (sf::RectangleShape Shape : RatingShapes)
+            {
+                Window.draw(Shape);
+            }
+            for (sf::Text Text : RatingOptions)
+            {
+                Window.draw(Text);
+            }
+        }
         Window.display();
     }
     else if (state == "Login")
@@ -497,7 +570,8 @@ void MainWindow::Services(std::vector<std::reference_wrapper<Service>>& services
             ServiceRating.setCharacterSize(14 * std::min(widthScale, heightScale));
             ServiceRating.setPosition(widthScale * (225 + (j * 300)), heightScale * (i * 180));
             ServiceRating.setFillColor(sf::Color::Black);
-            ServiceRating.setString(std::to_string(servicesToShow[index].get().rating) + "/5 Stars");
+            int ratin = std::accumulate(servicesToShow[index].get().ratings.begin(), servicesToShow[index].get().ratings.end(), 0);
+            ServiceRating.setString(std::to_string(ratin/servicesToShow[index].get().ratings.size()) + "/5 Stars");
             Texts.push_back(ServiceRating);
 
             servicesToShow[index].get().visible = true;
@@ -640,12 +714,13 @@ void MainWindow::login()
     SignIn.setFillColor(sf::Color::Black);
     LoginViewText.push_back(SignIn);
 
+    sf::Color backgroundColor(231, 231, 231);
     sf::Text Error;
     Error.setFont(Font);
-    Error.setString("Invalid username or password.");
+    Error.setString("Unable to login. Please try again.");
     Error.setCharacterSize(24 * std::min(widthScale, heightScale));
     Error.setPosition(Center + 130 - (500 * widthScale / 2.0f), Box1 - 50);
-    Error.setFillColor(Logo);
+    Error.setFillColor(backgroundColor);
     LoginViewText.push_back(Error);
 }
 
@@ -718,7 +793,8 @@ void MainWindow::OpenService(int index)
 
     sf::Text Rating;
     Rating.setFont(Font);
-    Rating.setString(std::to_string(services[index].rating) + "/5 Stars");
+    int ratin = std::accumulate(services[index].ratings.begin(), services[index].ratings.end(), 0);
+    Rating.setString(std::to_string(ratin/services[index].ratings.size()) + "/5 Stars");
     Rating.setCharacterSize(48 * std::min(widthScale, heightScale));
     Rating.setPosition(975 * widthScale, 10 * heightScale);
     Rating.setFillColor(sf::Color::White);
@@ -741,6 +817,22 @@ void MainWindow::OpenService(int index)
     BackText.setPosition(30 * widthScale, 705 * heightScale);
     BackText.setFillColor(sf::Color::Black);
     ServiceText.push_back(BackText);
+
+    sf::RectangleShape RatingButton;
+    RatingButton.setSize(sf::Vector2f(200 * widthScale, 40 * heightScale));
+    RatingButton.setPosition(850 * widthScale, 100 * heightScale);
+    RatingButton.setFillColor(sf::Color::White);
+    RatingButton.setOutlineColor(sf::Color::Black);
+    RatingButton.setOutlineThickness(2);
+    ServiceView.push_back(RatingButton);
+
+    sf::Text RatingText;
+    RatingText.setFont(Font);
+    RatingText.setString("Add A Review");
+    RatingText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    RatingText.setPosition(880 * widthScale, 105 * heightScale);
+    RatingText.setFillColor(sf::Color::Black);
+    ServiceText.push_back(RatingText);
 }
 
 void MainWindow::PerformSearch(const std::string& query) {
@@ -761,4 +853,91 @@ void MainWindow::PerformSearch(const std::string& query) {
     if (results.empty()) {
         std::cout << "No related services found.\n";
     }
+}
+
+void MainWindow::RatingObjects()
+{
+    sf::Vector2u baseSize(1200.0f, 800.0f);
+    sf::Vector2u currentSize = Window.getSize();
+
+    float widthScale = static_cast<float>(currentSize.x) / baseSize.x;
+    float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
+
+    float totalWidth = 5 * 50 * widthScale + 4 * 10 * widthScale;
+    float startX = (currentSize.x - totalWidth) / 2.0f + 375;
+
+    for (int i = 0; i < 5; i++)
+    {
+        sf::RectangleShape RatingShape;
+        RatingShape.setSize(sf::Vector2f(50 * widthScale, 50 * heightScale));
+        RatingShape.setPosition(startX + i * (50 * widthScale + 10 * widthScale), 175 * heightScale);
+        RatingShape.setFillColor(sf::Color::White);
+        RatingShape.setOutlineColor(sf::Color::Black);
+        RatingShape.setOutlineThickness(2);
+        RatingShapes.push_back(RatingShape);
+
+        sf::Text RatingText;
+        RatingText.setFont(Font);
+        RatingText.setString(std::to_string(i + 1));
+        RatingText.setCharacterSize(24);
+        RatingText.setPosition(startX + i * (50 * widthScale + 10 * widthScale) + 25 * widthScale, 175 * heightScale);
+        RatingText.setFillColor(sf::Color::Black);
+        RatingOptions.push_back(RatingText);
+    }
+
+    sf::RectangleShape RatingSubmit;
+    RatingSubmit.setSize(sf::Vector2f(200 * widthScale, 40 * heightScale));
+    RatingSubmit.setPosition(808 * widthScale, 250 * heightScale);
+    RatingSubmit.setFillColor(sf::Color::White);
+    RatingSubmit.setOutlineColor(sf::Color::Black);
+    RatingSubmit.setOutlineThickness(2);
+    RatingShapes.push_back(RatingSubmit);
+
+    sf::Text RatingButton;
+    RatingButton.setFont(Font);
+    RatingButton.setString("Submit Review");
+    RatingButton.setCharacterSize(24 * std::min(widthScale, heightScale));
+    RatingButton.setPosition(840 * widthScale, 255 * heightScale);
+    RatingButton.setFillColor(sf::Color::Black);
+    RatingOptions.push_back(RatingButton);
+
+    sf::Text RatingText;
+    RatingText.setFont(Font);
+    RatingText.setString("How would you rate the service?");
+    RatingText.setCharacterSize(24);
+    RatingText.setPosition(760 * widthScale, 125 * heightScale);
+    RatingText.setFillColor(sf::Color::Black);
+    RatingOptions.push_back(RatingText);
+
+    sf::Color backgroundColor(231, 231, 231);
+    sf::Text Error;
+    Error.setFont(Font);
+    Error.setString("Please select a rating");
+    Error.setCharacterSize(24);
+    Error.setPosition(810 * widthScale, 100 * heightScale);
+    Error.setFillColor(backgroundColor);
+    RatingOptions.push_back(Error);
+}
+
+void MainWindow::AddReview(Service *service, int rating)
+{
+    sf::Vector2u baseSize(1200.0f, 800.0f);
+    sf::Vector2u currentSize = Window.getSize();
+
+    float widthScale = static_cast<float>(currentSize.x) / baseSize.x;
+    float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
+
+    service->ratings.push_back(rating);
+    int ratin = std::accumulate(service->ratings.begin(), service->ratings.end(), 0);
+    ServiceText[2].setString(std::to_string(ratin/service->ratings.size()) + "/5 Stars");
+    RatingShapes.clear();
+    RatingOptions.clear();
+
+    sf::Text RatingText;
+    RatingText.setFont(Font);
+    RatingText.setString("Thank you for your feedback!");
+    RatingText.setCharacterSize(24);
+    RatingText.setPosition(760 * widthScale, 125 * heightScale);
+    RatingText.setFillColor(sf::Color::Black);
+    ServiceText.push_back(RatingText);
 }
