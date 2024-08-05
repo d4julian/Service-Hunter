@@ -15,6 +15,16 @@ public:
     void run();
 
 private:
+
+    struct User
+    {
+        string username;
+        std::vector<Service*> appointments;
+        std::vector<std::pair<Service, int>> reviews;
+    };
+
+    User currentUserData;
+
     std::vector<Service> services;
     std::string state;
     int page;
@@ -58,8 +68,17 @@ private:
     std::vector<sf::RectangleShape> RatingShapes;
     int rating;
 
+    std::vector<sf::Text> UserText;
+    std::vector<sf::RectangleShape> UserRect;
+    std::vector<sf::Text> UserViewText;
+    std::vector<sf::RectangleShape> UserViewRect;
+
+    sf::RectangleShape Book;
+
     void PageNavigation(int page);
 
+    void userMenu();
+    void BookService(Service *service);
     void AddReview(Service *service, int);
     void RatingObjects();
     void login();
