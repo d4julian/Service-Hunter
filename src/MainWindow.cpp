@@ -298,6 +298,10 @@ void MainWindow::Events() {
                         login();
                         break;
                     }
+                    else if (Login[0].getGlobalBounds().contains(clickPosition.x, clickPosition.y) && loggedin) {
+                        userMenu();
+                        break;
+                    }
                     if (UI[1].getGlobalBounds().contains(clickPosition.x, clickPosition.y) &&
                         UIText[1].getString() == "Search Services") {
                         UIText[1].setString("");
@@ -380,13 +384,36 @@ void MainWindow::Events() {
                                 ServiceText.clear();
                                 RatingOptions.clear();
                                 RatingShapes.clear();
+                                Book = sf::RectangleShape();
                                 CurrentSelection = nullptr;
                             }
-                            if (i == 2)
-                            {
+                            if (i == 2) {
                                 ServiceView.erase(ServiceView.begin() + i);
-                                ServiceText.erase(ServiceText.begin() + i*2);
+                                //ServiceText.erase(ServiceText.begin() + i * 2);
+                                ServiceText[i*2].setFillColor(sf::Color::Transparent);
                                 RatingObjects();
+                            }
+                        }
+                        if (Book.getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
+                            if (currentUserData.username != "") {
+                                BookService(CurrentSelection);
+                                ServiceView.clear();
+                                ServiceText.clear();
+                                RatingOptions.clear();
+                                RatingShapes.clear();
+                                Book = sf::RectangleShape();
+                                CurrentSelection = nullptr;
+                                state = "Main";
+                                break;
+                            } else {
+                                ServiceView.clear();
+                                ServiceText.clear();
+                                RatingOptions.clear();
+                                RatingShapes.clear();
+                                Book = sf::RectangleShape();
+                                CurrentSelection = nullptr;
+                                login();
+                                break;
                             }
                         }
                     }
@@ -394,7 +421,6 @@ void MainWindow::Events() {
                         for (int i = 0; i < RatingShapes.size(); ++i) {
                             if (RatingShapes[i].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
                                 if (i == 5) {
-                                    std::cout << i << " " << rating << std::endl;
                                     if (rating <= 5 && rating >= 1)
                                     {
                                         AddReview(CurrentSelection, rating);
@@ -471,6 +497,10 @@ void MainWindow::Events() {
                         currentUser = LoginViewText[2].getString();
                         currentPass = LoginViewText[3].getString();
                         loggedin = database.loginUser(trim(currentUser), trim(currentPass));
+                        if (loggedin)
+                        {
+                            currentUserData.username = currentUser;
+                        }
                         std::cout << "User was able to be logged in? " << loggedin << std::endl;
                         if (!loggedin) {
                             LoginViewText[7].setFillColor(sf::Color::Red);
@@ -484,6 +514,8 @@ void MainWindow::Events() {
                         float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
                         LoginText[0].setString("Welcome " + currentUser + "!");
                         LoginText[0].setPosition(1000 * widthScale , 25 * heightScale);
+                        Login[0].setPosition(975 * widthScale, 20 * heightScale);
+                        Login[0].setSize(sf::Vector2f(200 * widthScale, 40 * heightScale));
                         LoginView.clear();
                         LoginViewText.clear();
                     }
@@ -511,6 +543,81 @@ void MainWindow::Events() {
                         LoginView[i].setOutlineColor(sf::Color::Red);
                     } else {
                         LoginView[i].setOutlineColor(sf::Color::Black);
+                    }
+                }
+            }
+        }
+    }
+    else if (state == "User")
+    {
+        while (Window.pollEvent(Event)) {
+            if (Event.type == sf::Event::Closed) {
+                Window.close();
+            } else if (Event.type == sf::Event::MouseButtonPressed) {
+                if (Event.mouseButton.button == sf::Mouse::Left) {
+                    sf::Vector2i clickPosition = sf::Mouse::getPosition(Window);
+                    for (unsigned int i = 0; i < UserRect.size(); ++i) {
+                        if (UserRect[i].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
+                            if (i == 1) {
+                                state = "Main";
+                                UserRect.clear();
+                                UserText.clear();
+                            }
+                            if (i == 2) {
+                                state = "Main";
+                                UserRect.clear();
+                                UserText.clear();
+                                currentUserData.appointments.clear();
+                                currentUserData.reviews.clear();
+                                currentUserData.username = "";
+                                loggedin = false;
+                            }
+                            if (i > 2)
+                            {
+                                for (int j = 0; j < services.size(); j++)
+                                {
+                                    if (UserText[i].getString() == services[j].title)
+                                    {
+                                        UserRect.clear();
+                                        UserText.clear();
+                                        CurrentSelection = &services[j];
+                                        OpenService(j);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (unsigned int i = 0; i < UserViewRect.size(); i++)
+                    {
+                        if (UserViewRect[i].getGlobalBounds().contains(clickPosition.x, clickPosition.y))
+                        {
+                            currentUserData.appointments.erase(currentUserData.appointments.begin() + i);
+                            userMenu();
+                            break;
+                        }
+                    }
+                }
+            } else if (Event.type == sf::Event::MouseMoved) {
+                sf::Vector2i mousePosition = sf::Mouse::getPosition(Window);
+                for (unsigned int i = 0; i < UserRect.size(); ++i) {
+                    if (UserRect[i].getGlobalBounds().contains(mousePosition.x, mousePosition.y)) {
+                        UserRect[i].setOutlineColor(sf::Color::Red);
+                    } else {
+                        UserRect[i].setOutlineColor(sf::Color::Black);
+                    }
+                }
+                for (unsigned int i = 0; i < UserViewRect.size(); i++)
+                {
+                    if (UserViewRect[i].getGlobalBounds().contains(mousePosition.x, mousePosition.y))
+                    {
+                        UserViewRect[i].setOutlineColor(sf::Color::Red);
+                        UserRect[i+3].setOutlineColor(sf::Color::Black);
+                        break;
+                    }
+                    else
+                    {
+                        UserViewRect[i].setOutlineColor(sf::Color::Black);
                     }
                 }
             }
@@ -561,6 +668,7 @@ void MainWindow::Draw()
         }
         if (loggedin)
         {
+            Window.draw(Login[0]);
             Window.draw(LoginText[0]);
         }
         else
@@ -600,6 +708,26 @@ void MainWindow::Draw()
             Window.draw(Shape);
         }
         for (sf::Text Text : LoginViewText)
+        {
+            Window.draw(Text);
+        }
+        Window.display();
+    }
+    else if (state == "User")
+    {
+        for (sf::RectangleShape Shape : UserRect)
+        {
+            Window.draw(Shape);
+        }
+        for (sf::Text Text : UserText)
+        {
+            Window.draw(Text);
+        }
+        for (sf::RectangleShape Shape : UserViewRect)
+        {
+            Window.draw(Shape);
+        }
+        for (sf::Text Text : UserViewText)
         {
             Window.draw(Text);
         }
@@ -848,6 +976,7 @@ std::string MainWindow::wrapText(const std::string &text, float width, const sf:
 
 void MainWindow::OpenService(int index)
 {
+    sf::Color backgroundColor(231, 231, 231);
     sf::Vector2u baseSize(1200.0f, 800.0f);
     sf::Vector2u currentSize = Window.getSize();
 
@@ -924,6 +1053,42 @@ void MainWindow::OpenService(int index)
     RatingText.setPosition(880 * widthScale, 105 * heightScale);
     RatingText.setFillColor(sf::Color::Black);
     ServiceText.push_back(RatingText);
+
+    sf::RectangleShape BookButton;
+    BookButton.setSize(sf::Vector2f(200 * widthScale, 40 * heightScale));
+    BookButton.setPosition(850 * widthScale, 650 * heightScale);
+    BookButton.setFillColor(sf::Color::White);
+    BookButton.setOutlineColor(sf::Color::Black);
+    BookButton.setOutlineThickness(2);
+    ServiceView.push_back(BookButton);
+
+    Book = BookButton;
+
+    sf::Text BookText;
+    BookText.setFont(Font);
+    BookText.setString("Book Appointment");
+    BookText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    BookText.setPosition(870 * widthScale, 655 * heightScale);
+    BookText.setFillColor(sf::Color::Black);
+    ServiceText.push_back(BookText);
+
+    sf::Text BookingInfo;
+    BookingInfo.setFont(Font);
+    std::string text = wrapText("By booking an appointment, you agree to the terms and conditions of the service provider.", 200, Font, 12);
+    BookingInfo.setString(text);
+    BookingInfo.setCharacterSize(12 * std::min(widthScale, heightScale));
+    BookingInfo.setPosition(850 * widthScale, 700 * heightScale);
+    BookingInfo.setFillColor(sf::Color::Black);
+    ServiceText.push_back(BookingInfo);
+
+    sf::Text BookError;
+    BookText.setFont(Font);
+    BookText.setString("Please sign into an account to book an appointment.");
+    BookText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    BookText.setPosition(850 * widthScale, 600 * heightScale);
+    BookText.setFillColor(backgroundColor);
+    ServiceText.push_back(BookText);
+
 }
 
 void MainWindow::PerformSearch(const std::string& query) {
@@ -1051,4 +1216,117 @@ void MainWindow::PageNavigation(int page)
         }
     }
     Services(servicesToShow);
+}
+
+void MainWindow::BookService(Service *service)
+{
+    currentUserData.appointments.push_back(service);
+
+}
+
+void MainWindow::userMenu()
+{
+    UserViewRect.clear();
+    UserViewText.clear();
+    UserRect.clear();
+    UserText.clear();
+
+    sf::Vector2u baseSize(1200.0f, 800.0f);
+    sf::Vector2u currentSize = Window.getSize();
+
+    float widthScale = static_cast<float>(currentSize.x) / baseSize.x;
+    float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
+
+    state = "User";
+    sf::Text Header;
+    sf::RectangleShape HeaderBackground;
+
+    Header.setFont(Font);
+
+    Header.setString("Welcome " + currentUserData.username + "!");
+    Header.setCharacterSize(48 * std::min(widthScale, heightScale));
+    Header.setPosition(20 * widthScale, 10 * heightScale);
+    Header.setFillColor(sf::Color::White);
+    Header.setOutlineColor(sf::Color::Black);
+    Header.setOutlineThickness(1);
+    UserText.push_back(Header);
+
+    sf::Color Logo(137, 207, 240);
+    HeaderBackground.setSize(sf::Vector2f(1200 * widthScale, 80 * heightScale));
+    HeaderBackground.setPosition(0, 0);
+    HeaderBackground.setFillColor(Logo);
+    UserRect.push_back(HeaderBackground);
+
+    sf::RectangleShape BackButton;
+    BackButton.setSize(sf::Vector2f(200 * widthScale, 40 * heightScale));
+    BackButton.setPosition(20 * widthScale, 700 * heightScale);
+    BackButton.setFillColor(sf::Color::White);
+    BackButton.setOutlineColor(sf::Color::Black);
+    BackButton.setOutlineThickness(2);
+    UserRect.push_back(BackButton);
+
+    sf::Text BackText;
+    BackText.setFont(Font);
+    BackText.setString("Back");
+    BackText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    BackText.setPosition(30 * widthScale, 705 * heightScale);
+    BackText.setFillColor(sf::Color::Black);
+    UserText.push_back(BackText);
+
+    sf::RectangleShape SignOutButton;
+    SignOutButton.setSize(sf::Vector2f(200 * widthScale, 40 * heightScale));
+    SignOutButton.setPosition(20 * widthScale, 650 * heightScale);
+    SignOutButton.setFillColor(sf::Color::White);
+    SignOutButton.setOutlineColor(sf::Color::Black);
+    SignOutButton.setOutlineThickness(2);
+    UserRect.push_back(SignOutButton);
+
+    sf::Text SignOutText;
+    SignOutText.setFont(Font);
+    SignOutText.setString("Sign Out");
+    SignOutText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    SignOutText.setPosition(30 * widthScale, 655 * heightScale);
+    SignOutText.setFillColor(sf::Color::Black);
+    UserText.push_back(SignOutText);
+
+    float startY = 150 * heightScale;
+    float boxHeight = 50 * heightScale;
+    float boxWidth = 1100 * widthScale;
+    float padding = 10 * heightScale;
+
+    for (int i = 0; i < currentUserData.appointments.size(); i++)
+    {
+        sf::RectangleShape serviceBox;
+        serviceBox.setSize(sf::Vector2f(boxWidth, boxHeight));
+        serviceBox.setPosition(50 * widthScale, startY + i * (boxHeight + padding));
+        serviceBox.setFillColor(sf::Color::White);
+        serviceBox.setOutlineColor(sf::Color::Black);
+        serviceBox.setOutlineThickness(2);
+        UserRect.push_back(serviceBox);
+
+        sf::Text serviceText;
+        serviceText.setFont(Font);
+        serviceText.setString(currentUserData.appointments[i]->title);
+        serviceText.setCharacterSize(24 * std::min(widthScale, heightScale));
+        serviceText.setPosition(60 * widthScale, startY + i * (boxHeight + padding) + 10 * heightScale);
+        serviceText.setFillColor(sf::Color::Black);
+        UserText.push_back(serviceText);
+
+        sf::RectangleShape deleteButton;
+        deleteButton.setSize(sf::Vector2f(100 * widthScale, boxHeight));
+        deleteButton.setPosition(1050 * widthScale, startY + i * (boxHeight + padding));
+        deleteButton.setFillColor(sf::Color::White);
+        deleteButton.setOutlineColor(sf::Color::Black);
+        deleteButton.setOutlineThickness(2);
+        UserViewRect.push_back(deleteButton);
+
+        sf::Text deleteText;
+        deleteText.setFont(Font);
+        deleteText.setString("Delete");
+        deleteText.setCharacterSize(24 * std::min(widthScale, heightScale));
+        deleteText.setPosition(1060 * widthScale, startY + i * (boxHeight + padding) + 10 * heightScale);
+        deleteText.setFillColor(sf::Color::Black);
+        UserViewText.push_back(deleteText);
+    }
+
 }
