@@ -429,9 +429,36 @@ void MainWindow::Events() {
                         }
                     }
                     if (RatingOptions.size() > 0) {
+                        bool done = false;
                         for (int i = 0; i < RatingShapes.size(); ++i) {
                             if (RatingShapes[i].getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
                                 if (i == 5) {
+                                    if (loggedin)
+                                    {
+                                        for (auto reviews : currentUserData.reviews)
+                                        {
+                                            if (reviews.first->title == CurrentSelection->title)
+                                            {
+                                                RatingOptions[7].setFillColor(sf::Color::Red);
+                                                RatingOptions[7].setString("You have already reviewed this service");
+                                                done = true;
+                                                break;
+                                            }
+                                        }
+                                        if (done)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                    else if(!loggedin)
+                                    {
+                                        RatingOptions[7].setFillColor(sf::Color::Red);
+                                        RatingOptions[7].setString("Please login to leave a review");
+                                    }
+                                    if (done)
+                                    {
+                                        break;
+                                    }
                                     if (rating <= 5 && rating >= 1)
                                     {
                                         AddReview(CurrentSelection, rating);
@@ -439,6 +466,7 @@ void MainWindow::Events() {
                                     else
                                     {
                                         RatingOptions[7].setFillColor(sf::Color::Red);
+                                        RatingOptions[7].setString("Please select a rating");
                                     }
                                     break;
                                 }
@@ -835,7 +863,7 @@ void MainWindow::Services(std::vector<std::reference_wrapper<Service>>& services
             float iconX = widthScale * (25 + (j * 300) + (250 - targetSize.x) / 2);
             float iconY = heightScale * ((i * 180) + 70);
             icon.setPosition(iconX, iconY);
-            
+
         }
     }
 }
@@ -1207,7 +1235,7 @@ void MainWindow::RatingObjects()
     Error.setFont(Font);
     Error.setString("Please select a rating");
     Error.setCharacterSize(24);
-    Error.setPosition(810 * widthScale, 100 * heightScale);
+    Error.setPosition(760 * widthScale, 90 * heightScale);
     Error.setFillColor(backgroundColor);
     RatingOptions.push_back(Error);
 }
@@ -1220,6 +1248,8 @@ void MainWindow::AddReview(Service *service, int rating)
     float widthScale = static_cast<float>(currentSize.x) / baseSize.x;
     float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
 
+
+    currentUserData.reviews.push_back({service, rating});
     service->ratings.push_back(rating);
     int ratin = std::accumulate(service->ratings.begin(), service->ratings.end(), 0);
     ServiceText[2].setString(std::to_string(ratin/service->ratings.size()) + "/5 Stars");
@@ -1367,4 +1397,3 @@ void MainWindow::userMenu()
     }
 
 }
-

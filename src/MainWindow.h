@@ -20,7 +20,7 @@ private:
     {
         string username;
         std::vector<Service*> appointments;
-        std::vector<std::pair<Service, int>> reviews;
+        std::vector<std::pair<Service*, int>> reviews;
     };
 
     User currentUserData;
