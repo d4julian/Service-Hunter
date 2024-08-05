@@ -353,6 +353,16 @@ void MainWindow::Events() {
                 } else {
                     Login[0].setOutlineColor(sf::Color::Black);
                 }
+                if (Pages[0].getGlobalBounds().contains(mousePosition.x, mousePosition.y) && page > 1) {
+                    Pages[0].setOutlineColor(sf::Color::Red);
+                } else {
+                    Pages[0].setOutlineColor(sf::Color::Black);
+                }
+                if (Pages[1].getGlobalBounds().contains(mousePosition.x, mousePosition.y) && page < (services.size() + 11) / 12) {
+                    Pages[1].setOutlineColor(sf::Color::Red);
+                } else {
+                    Pages[1].setOutlineColor(sf::Color::Black);
+                }
             }
         }
     } else if (state == "Service") {
