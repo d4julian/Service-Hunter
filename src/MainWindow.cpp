@@ -74,6 +74,7 @@ void MainWindow::BuildUI()
     int h = size.y;
     if (w == width && h == height)
     {
+        return;
         if (state == "Main")
         {
             return;
@@ -698,6 +699,16 @@ void MainWindow::Draw()
                 Window.draw(PageTexts[2]);
             }
         }
+        if (loggedin)
+        {
+            Window.draw(Login[0]);
+            Window.draw(LoginText[0]);
+        }
+        else
+        {
+            Window.draw(Login[0]);
+            Window.draw(LoginText[0]);
+        }
         Window.draw(Login[0]);
         Window.draw(LoginText[0]);
         Window.display();
@@ -957,10 +968,13 @@ void MainWindow::login()
     SignIn.setFillColor(sf::Color::Black);
     LoginViewText.push_back(SignIn);
 
+    sf::Color backgroundColor(231, 231, 231);
     sf::Text Error;
     Error.setFont(Font);
     Error.setString("Unable to login. Please try again.");
     Error.setCharacterSize(24 * std::min(widthScale, heightScale));
+    Error.setPosition(Center + 130 - (500 * widthScale / 2.0f), Box1 - 50);
+    Error.setFillColor(backgroundColor);
     Error.setPosition(Center + 160 - (500 * widthScale / 2.0f), Box1 - 50);
     Error.setFillColor(sf::Color::Transparent);
     LoginViewText.push_back(Error);
@@ -1353,3 +1367,4 @@ void MainWindow::userMenu()
     }
 
 }
+
