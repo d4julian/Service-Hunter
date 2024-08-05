@@ -75,6 +75,10 @@ void MainWindow::BuildUI()
     if (w == width && h == height)
     {
         return;
+        if (state == "Main")
+        {
+            return;
+        }
     }
 
     width = w;
@@ -100,6 +104,13 @@ void MainWindow::BuildUI()
         }
         return;
     }
+
+    UIText.clear();
+    UI.clear();
+    Pages.clear();
+    PageTexts.clear();
+    Login.clear();
+    LoginText.clear();
 
     sf::Vector2u baseSize(1200.0f, 800.0f);
     sf::Vector2u currentSize = Window.getSize();
@@ -570,6 +581,28 @@ void MainWindow::Events() {
                                 currentUserData.appointments.clear();
                                 currentUserData.reviews.clear();
                                 currentUserData.username = "";
+
+                                sf::Vector2u baseSize(1200.0f, 800.0f);
+                                sf::Vector2u currentSize = Window.getSize();
+
+                                float widthScale = static_cast<float>(currentSize.x) / baseSize.x;
+                                float heightScale = static_cast<float>(currentSize.y) / baseSize.y;
+
+                                sf::RectangleShape LoginButton;
+                                LoginButton.setSize(sf::Vector2f(100 * widthScale, 40 * heightScale));
+                                LoginButton.setPosition(1000 * widthScale, 20 * heightScale);
+                                LoginButton.setFillColor(sf::Color::White);
+                                LoginButton.setOutlineColor(sf::Color::Black);
+                                LoginButton.setOutlineThickness(2);
+                                Login[0] = LoginButton;
+
+                                sf::Text LoginTex;
+                                LoginTex.setFont(Font);
+                                LoginTex.setString("Sign in");
+                                LoginTex.setCharacterSize(24 * std::min(widthScale, heightScale));
+                                LoginTex.setPosition(1015 * widthScale, 25 * heightScale);
+                                LoginTex.setFillColor(sf::Color::Black);
+                                LoginText[0] = LoginTex;
                                 loggedin = false;
                             }
                             if (i > 2)
@@ -676,6 +709,8 @@ void MainWindow::Draw()
             Window.draw(Login[0]);
             Window.draw(LoginText[0]);
         }
+        Window.draw(Login[0]);
+        Window.draw(LoginText[0]);
         Window.display();
     }
     else if (state == "Service")
@@ -940,6 +975,8 @@ void MainWindow::login()
     Error.setCharacterSize(24 * std::min(widthScale, heightScale));
     Error.setPosition(Center + 130 - (500 * widthScale / 2.0f), Box1 - 50);
     Error.setFillColor(backgroundColor);
+    Error.setPosition(Center + 160 - (500 * widthScale / 2.0f), Box1 - 50);
+    Error.setFillColor(sf::Color::Transparent);
     LoginViewText.push_back(Error);
 }
 
@@ -1330,3 +1367,4 @@ void MainWindow::userMenu()
     }
 
 }
+
