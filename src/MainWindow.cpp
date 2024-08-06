@@ -12,7 +12,11 @@ MainWindow::MainWindow()
 
     auto future = std::async(std::launch::async, []() { return database.getServices(); });
 
+    std::cout << "If your resolution is formatted improperly, please open MainWindow.cpp and change the full variable to" <<
+    "\n" <<  "false on line 18 and it will fill to to 1470x819 which is what the program was designed with " << "\n";
+
     bool full = true;
+    bool fill = !full;
 
     int widt;
     int heigh;
@@ -21,12 +25,16 @@ MainWindow::MainWindow()
         widt = sf::VideoMode::getDesktopMode().width;
         heigh = sf::VideoMode::getDesktopMode().height;
     }
+    else if (fill)
+    {
+        widt = 1470;
+        heigh = 819;
+    }
     else
     {
         widt = 1200;
         heigh = 800;
     }
-
     Window.create(sf::VideoMode(widt, heigh), "Service Hunter");
 
     std::string fontPath = "assets/Arial.ttf";
@@ -465,24 +473,21 @@ void MainWindow::Events() {
                                         {
                                             break;
                                         }
-                                    }
-                                    else if(!loggedin)
-                                    {
-                                        RatingOptions[7].setFillColor(sf::Color::Red);
-                                        RatingOptions[7].setString("Please login to leave a review");
-                                    }
-                                    if (done)
-                                    {
-                                        break;
-                                    }
-                                    if (rating <= 5 && rating >= 1)
-                                    {
-                                        AddReview(CurrentSelection, rating);
+                                        if (rating <= 5 && rating >= 1)
+                                        {
+                                            AddReview(CurrentSelection, rating);
+                                            UpdateReview();
+                                        }
+                                        else
+                                        {
+                                            RatingOptions[7].setFillColor(sf::Color::Red);
+                                            RatingOptions[7].setString("Please select a rating");
+                                        }
                                     }
                                     else
                                     {
                                         RatingOptions[7].setFillColor(sf::Color::Red);
-                                        RatingOptions[7].setString("Please select a rating");
+                                        RatingOptions[7].setString("Please login to leave a review");
                                     }
                                     break;
                                 }
@@ -1268,7 +1273,7 @@ void MainWindow::AddReview(Service *service, int rating)
     currentUserData.reviews.push_back({service, rating});
     service->ratings.push_back(rating);
     int ratin = std::accumulate(service->ratings.begin(), service->ratings.end(), 0);
-    ServiceText[2].setString(std::to_string(ratin/service->ratings.size()) + "/5 Stars");
+    ServiceText[2].setString(std::to_string(ratin/(service->ratings.size())) + "/5 Stars");
     RatingShapes.clear();
     RatingOptions.clear();
 
@@ -1412,4 +1417,18 @@ void MainWindow::userMenu()
         UserViewText.push_back(deleteText);
     }
 
+}
+
+void MainWindow::UpdateReview()
+{
+    for (int i = 0; i < Texts.size(); i++)
+    {
+        if (Texts[i].getString() == CurrentSelection->title)
+        {
+            int rating = std::accumulate(CurrentSelection->ratings.begin(), CurrentSelection->ratings.end(), 0);
+            Texts[i + 2].setString(std::to_string(rating/(CurrentSelection->ratings.size())) + "/5 Stars");
+            break;
+        }
+        i += 2;
+    }
 }

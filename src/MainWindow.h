@@ -80,6 +80,7 @@ private:
     void userMenu();
     void BookService(Service *service);
     void AddReview(Service *service, int);
+    void UpdateReview();
     void RatingObjects();
     void login();
     void OpenService(int index);
