@@ -1,19 +1,72 @@
-# Service-Hunter
+
+# Service Hunter
+
 A booking system for a service marketplace that connects customers with local service providers such as plumbers, makeup artists, AC repair technicians, and more.
 
-# CEN3031 Summer 2024 Project Description
-You are tasked with designing a booking system for a service marketplace that connects customers with local service providers such as plumbers, makeup artists, AC repair technicians, and more. The system must allow customers to create accounts, search for services, view service provider profiles, read reviews, and book appointments. Local businesses should be able to create detailed listings, set their availability, manage bookings, and respond to customer reviews. The system should handle all bookings automatically, ensuring that only available time slots can be booked. The interface should provide personalized information based on the type of user logged in, showcasing available services, provider ratings, pricing, and service descriptions to customers, while businesses should see their booking schedules, customer inquiries, and performance metrics. This information should be dynamically tailored to the current user's role, with a default assumption of a browsing customer if not logged in.
+### Prerequisites
 
-While this system is not required to be developed to be accessed via the web or from a mobile app, it must be able to be run on multiple different devices while accessing a central database (you will run a database locally for testing and development, but it should function as if you were connecting to a database on a central server). You will receive a more detailed functional requirements list soon.
+- PostgreSQL
+- C++ compiler (e.g., `clang++` or `g++`)
+- CMake
+- SFML library
 
-## Course Specifications:
-- Implements user authentication
-- Implements a dynamic database of user and item data
-- Implements one or more “operations” involving some form of frontend-backend-database communication
-## Course Expectations:
-- Databases can use any existing dataset or have dummy data. Databases using datasets should have at least 100 items. There can be exceptions based on the specific project.
-- New User creation/registration should be available
-- UI design should contain elements commonly found or expected such as a user profile, login, logout.
-- Consideration for design aesthetics
-- System should be dynamic and responsive
+### Clone the Repository
 
+```sh
+git clone https://github.com/yourusername/Service-Hunter.git
+cd Service-Hunter
+```
+
+### Build the Project
+
+1. Create a build directory:
+
+    ```sh
+    mkdir build
+    cd build
+    ```
+
+2. Run CMake to generate the build files:
+
+    ```sh
+    cmake ..
+    ```
+
+3. Build the project:
+
+    ```sh
+    make
+    ```
+
+### Database Setup
+
+1. Ensure your `db_password.txt` file contains the database credentials.
+
+### Run the Application
+
+```sh
+./ServiceHunter
+```
+
+## Project Structure
+
+```
+Service-Hunter/
+│
+├── assets/                   # Assets like fonts and images
+│   ├── Arial.ttf
+│   └── ...
+│
+├── build/                    # Build directory (created after running CMake)
+│   └── ...
+│
+├── src/                      # Source files
+│   ├── MainWindow.cpp        # Main application window implementation
+│   ├── MainWindow.h          # Header for MainWindow
+│   ├── Database.cpp          # Database interaction implementation
+│   ├── Database.h            # Header for Database
+│   └── ...
+│
+├── CMakeLists.txt            # CMake build configuration
+└── README.md                 # This README file
+```
