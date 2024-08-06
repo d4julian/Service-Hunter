@@ -320,7 +320,7 @@ void MainWindow::Events() {
                 }
             } else if (Event.type == sf::Event::TextEntered) {
                 if (Event.text.unicode < 128) {
-                    if (Event.text.unicode != 8) {
+                    if (Event.text.unicode != 8 && Event.text.unicode != 10) {
                         UIText[1].setString(UIText[1].getString() + Event.text.unicode);
                     }
                 }
@@ -406,17 +406,7 @@ void MainWindow::Events() {
                             }
                         }
                         if (Book.getGlobalBounds().contains(clickPosition.x, clickPosition.y)) {
-                            if (currentUserData.username != "") {
-                                BookService(CurrentSelection);
-                                ServiceView.clear();
-                                ServiceText.clear();
-                                RatingOptions.clear();
-                                RatingShapes.clear();
-                                Book = sf::RectangleShape();
-                                CurrentSelection = nullptr;
-                                state = "Main";
-                                break;
-                            } else {
+                            if (currentUserData.username == "") {
                                 ServiceView.clear();
                                 ServiceText.clear();
                                 RatingOptions.clear();
@@ -425,6 +415,32 @@ void MainWindow::Events() {
                                 CurrentSelection = nullptr;
                                 login();
                                 break;
+                            }
+                            if (loggedin)
+                            {
+                                bool booked = false;
+                                for (auto appointments : currentUserData.appointments)
+                                {
+                                    if (appointments->title == CurrentSelection->title)
+                                    {
+                                        ServiceText[7].setFillColor(sf::Color::Red);
+                                        ServiceText[7].setString("You have already booked this service");
+                                        booked = true;
+                                        break;
+                                    }
+                                }
+                                if (!booked)
+                                {
+                                    BookService(CurrentSelection);
+                                    ServiceView.clear();
+                                    ServiceText.clear();
+                                    RatingOptions.clear();
+                                    RatingShapes.clear();
+                                    Book = sf::RectangleShape();
+                                    CurrentSelection = nullptr;
+                                    state = "Main";
+                                    break;
+                                }
                             }
                         }
                     }
@@ -1149,7 +1165,7 @@ void MainWindow::OpenService(int index)
     sf::Text BookError;
     BookText.setFont(Font);
     BookText.setString("Please sign into an account to book an appointment.");
-    BookText.setCharacterSize(24 * std::min(widthScale, heightScale));
+    BookText.setCharacterSize(16 * std::min(widthScale, heightScale));
     BookText.setPosition(850 * widthScale, 600 * heightScale);
     BookText.setFillColor(backgroundColor);
     ServiceText.push_back(BookText);
@@ -1364,7 +1380,7 @@ void MainWindow::userMenu()
     for (int i = 0; i < currentUserData.appointments.size(); i++)
     {
         sf::RectangleShape serviceBox;
-        serviceBox.setSize(sf::Vector2f(boxWidth, boxHeight));
+        serviceBox.setSize(sf::Vector2f(boxWidth - 100, boxHeight));
         serviceBox.setPosition(50 * widthScale, startY + i * (boxHeight + padding));
         serviceBox.setFillColor(sf::Color::White);
         serviceBox.setOutlineColor(sf::Color::Black);
